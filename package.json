@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently --kill-others --names \"next,trigger\" --prefix-colors \"yellow,blue\" \"next dev\" \"pnpm run trigger:dev\"",
+    "dev": "concurrently --kill-others-on-fail --names \"next,trigger\" --prefix-colors \"yellow,blue\" \"next dev\" \"pnpm run trigger:dev\"",
     "trigger:dev": "npx trigger.dev@latest dev --env-file .env.local",
     "build": "next build",
     "start": "next start",
