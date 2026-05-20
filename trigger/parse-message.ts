@@ -1,15 +1,16 @@
 import '@/lib/env'
 import { schemaTask } from '@trigger.dev/sdk'
 import { generateObject } from 'ai'
-import { createGoogleGenerativeAI } from '@ai-sdk/google'
+import { createAnthropic } from '@ai-sdk/anthropic'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { createTransaction } from '@/lib/transactions'
 import { validateAmount, assertOwnership } from '@/lib/validators'
 import { CATEGORY_IDS } from '@/lib/categories'
 import { PARSE_MESSAGE_SYSTEM_PROMPT } from '@/lib/prompts/parse-message.v1'
+import { getBudgetStatus } from '@/lib/budgets'
 
-const googleAI = createGoogleGenerativeAI({ apiKey: process.env.GOOGLE_AI_API_KEY! })
+const anthropic = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 const outputSchema = z.object({
   intent: z.enum([
@@ -79,7 +80,7 @@ export const parseMessage = schemaTask({
     const aiResult = await (async () => {
       try {
         return await generateObject({
-          model: googleAI('gemini-2.0-flash'),
+          model: anthropic('claude-haiku-4-5-20251001'),
           schema: outputSchema,
           system: PARSE_MESSAGE_SYSTEM_PROMPT,
           prompt: userContent,
@@ -115,6 +116,16 @@ export const parseMessage = schemaTask({
         })
         record = result
         recordId = result.transaction.id
+
+        // Warn the user if this expense pushes their category budget to ≥80%
+        if (parsed.transaction.type === 'EXPENSE') {
+          const budgets = await getBudgetStatus(payload.userId)
+          const affected = budgets.find((b) => b.category === parsed.transaction!.category)
+          if (affected && affected.percentage >= 80) {
+            const over = affected.percentage >= 100
+            reply += `\n\n⚠️ Heads up — you're at ${affected.percentage}% of your ${affected.category} budget this month${over ? ' (over limit!)' : ''}.`
+          }
+        }
       } catch (e) {
         if (e instanceof Error && e.message.startsWith('Amount must be')) {
           reply = `That amount doesn't look right — ${e.message.toLowerCase()}.`

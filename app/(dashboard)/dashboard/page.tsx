@@ -6,11 +6,14 @@ import {
   getMonthlyTotals,
   getRecentTransactions,
 } from '@/lib/dashboard'
+import { getBudgetStatus } from '@/lib/budgets'
 import { BalanceCard } from '@/components/dashboard/balance-card'
 import { SpendingChart } from '@/components/dashboard/spending-chart'
 import { MonthlyChart } from '@/components/dashboard/monthly-chart'
 import { RecentTransactions } from '@/components/dashboard/recent-transactions'
 import { EmptyState } from '@/components/dashboard/empty-state'
+import { BudgetProgress } from '@/components/dashboard/budget-progress'
+import { BudgetSettingsModal } from '@/components/dashboard/budget-settings-modal'
 
 export default async function DashboardPage() {
   const { userId: clerkId } = await auth()
@@ -18,10 +21,11 @@ export default async function DashboardPage() {
 
   const user = await getOrCreateUser(clerkId)
 
-  const [spending, monthly, transactions] = await Promise.all([
+  const [spending, monthly, transactions, budgets] = await Promise.all([
     getSpendingByCategory(user.id, new Date()),
     getMonthlyTotals(user.id, 6),
     getRecentTransactions(user.id, 10),
+    getBudgetStatus(user.id),
   ])
 
   const balance = Number(user.balance)
@@ -37,13 +41,32 @@ export default async function DashboardPage() {
           <MonthlyChart data={monthly} />
         </div>
 
-        {/* Right column — transactions or empty state */}
+        {/* Right column — transactions + budget limits */}
         <div className="flex flex-col gap-4">
           {hasTransactions ? (
             <RecentTransactions transactions={transactions} />
           ) : (
             <EmptyState />
           )}
+
+          {/* Budget limits section */}
+          <div className="bg-surface border border-default rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-primary">Budget Limits</h2>
+              <BudgetSettingsModal initialBudgets={budgets} />
+            </div>
+            {budgets.length === 0 ? (
+              <p className="text-sm text-muted text-center py-4">
+                No budget limits set. Use &ldquo;Edit Budgets&rdquo; to add one.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {budgets.map((b) => (
+                  <BudgetProgress key={b.id} budget={b} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

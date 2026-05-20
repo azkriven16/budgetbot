@@ -138,6 +138,8 @@
   .bg-income-dim { background-color: var(--state-income-dim); }
   .bg-expense { background-color: var(--state-expense); }
   .bg-expense-dim { background-color: var(--state-expense-dim); }
+  .bg-warning { background-color: var(--state-warning); }
+  .bg-error { background-color: var(--state-error); }
 
   /* Text tokens */
   .text-primary { color: var(--text-primary); }
