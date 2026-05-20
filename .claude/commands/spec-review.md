@@ -76,3 +76,15 @@ Description of the issue and what the fix should be.
 ### Step 8 — Confirm the build passes
 
 Run `pnpm build` and confirm it exits 0 before declaring the spec done. If it fails, fix it before marking done.
+
+### Step 9 — Commit and push
+
+After all fixes are applied and the build is green:
+
+```bash
+git add -p   # stage only spec-related files (never .env or secrets)
+git commit -m "fix(<spec-number>): post-spec review — <one-line summary of what was fixed>"
+git push origin main
+```
+
+The spec is not done until it is pushed.

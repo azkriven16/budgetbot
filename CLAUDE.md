@@ -20,11 +20,27 @@ Before implementing anything, read these files in order:
 The review is mandatory. Do not skip it. Do not move on without it. If the user says "implement spec 07", your response sequence is:
 
 1. Implement the spec
-2. Run `/spec-review 07 Chat Interface UI`
-3. Fix all 🚨 Critical findings
-4. Fix ⚠️ Major findings or log them in `context/current-issues.md`
-5. Run `pnpm build` — must exit 0
-6. Mark the spec ✅ Done in `context/progress-tracker.md`
+2. Commit: `git commit -m "feat(07): <title> — <one-line summary>"`
+3. Run `/spec-review 07 Chat Interface UI`
+4. Fix all 🚨 Critical findings
+5. Fix ⚠️ Major findings or log them in `context/current-issues.md`
+6. Run `pnpm build` — must exit 0
+7. Commit fixes: `git commit -m "fix(07): post-spec review fixes — <summary>"`
+8. Push: `git push origin main`
+9. Mark the spec ✅ Done in `context/progress-tracker.md`
+
+## Git conventions
+
+Remote: `https://github.com/azkriven16/budgetbot.git` (already set as `origin`)
+Branch: `main` — push directly, no PR required for spec commits.
+
+Commit message format:
+- Spec implementation: `feat(<spec-number>): <Spec Title> — <one-line summary>`
+- Review fixes: `fix(<spec-number>): post-spec review — <what was fixed>`
+- Hotfixes for logged issues: `fix: <short description>`
+- Docs/context updates: `chore: update <file>`
+
+Always commit before pushing. Never force-push main.
 
 ## Security rules (non-negotiable)
 
