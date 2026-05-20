@@ -117,6 +117,8 @@ export const parseMessage = schemaTask({
       } catch (e) {
         if (e instanceof Error && e.message.startsWith('Amount must be')) {
           reply = `That amount doesn't look right — ${e.message.toLowerCase()}.`
+        } else {
+          throw e
         }
       }
     } else if (parsed.intent === 'savings_contribution' && parsed.savingsContribution) {
@@ -145,6 +147,8 @@ export const parseMessage = schemaTask({
       } catch (e) {
         if (e instanceof Error && e.message.startsWith('Amount must be')) {
           reply = `That amount doesn't look right — ${e.message.toLowerCase()}.`
+        } else {
+          throw e
         }
       }
     } else if (parsed.intent === 'investment' && parsed.investment) {
@@ -167,6 +171,8 @@ export const parseMessage = schemaTask({
       } catch (e) {
         if (e instanceof Error && e.message.startsWith('Amount must be')) {
           reply = `That amount doesn't look right — ${e.message.toLowerCase()}.`
+        } else {
+          throw e
         }
       }
     } else if (parsed.intent === 'reminder' && parsed.reminder) {
@@ -177,25 +183,36 @@ export const parseMessage = schemaTask({
         reply =
           "You've reached the maximum of 10 active reminders. Delete some before adding new ones."
       } else {
-        const reminder = await prisma.reminder.create({
-          data: {
-            userId: payload.userId,
-            message: parsed.reminder.message,
-            recurrence: parsed.reminder.recurrence,
-            nextDueAt: new Date(parsed.reminder.nextDueAt),
-          },
-        })
-        record = reminder
-        recordId = reminder.id
+        const nextDueAt = new Date(parsed.reminder.nextDueAt)
+        if (isNaN(nextDueAt.getTime())) {
+          reply = "I couldn't set the reminder — the date format wasn't recognized."
+        } else {
+          const reminder = await prisma.reminder.create({
+            data: {
+              userId: payload.userId,
+              message: parsed.reminder.message,
+              recurrence: parsed.reminder.recurrence,
+              nextDueAt,
+            },
+          })
+          record = reminder
+          recordId = reminder.id
+        }
       }
     } else if (parsed.intent === 'correction' && parsed.correction) {
-      const recentMsg = await prisma.chatMessage.findFirst({
+      // Scan recent ASSISTANT messages to find the last one with a transactionId
+      const recentMsgs = await prisma.chatMessage.findMany({
         where: { userId: payload.userId, role: 'ASSISTANT' },
         orderBy: { createdAt: 'desc' },
+        take: 10,
+      })
+      const recentMsg = recentMsgs.find((m) => {
+        const meta = m.metadata as { transactionId?: string } | null
+        return !!meta?.transactionId
       })
 
-      const meta = recentMsg?.metadata as { transactionId?: string } | null | undefined
-      const transactionId = meta?.transactionId
+      const transactionId = (recentMsg?.metadata as { transactionId?: string } | null)
+        ?.transactionId
 
       if (!transactionId) {
         reply = "I couldn't find a recent transaction to correct."
@@ -209,21 +226,30 @@ export const parseMessage = schemaTask({
             const updateData: Record<string, unknown> = {}
             if (parsed.correction.field === 'amount') {
               const newAmount = parseFloat(parsed.correction.newValue)
-              validateAmount(newAmount)
-              updateData.amount = newAmount
+              // validateAmount now rejects NaN, but guard explicitly for clarity
+              if (isNaN(newAmount)) {
+                reply = "That doesn't look like a valid amount."
+              } else {
+                validateAmount(newAmount)
+                updateData.amount = newAmount
+              }
             } else if (parsed.correction.field === 'category') {
               updateData.category = parsed.correction.newValue
             } else {
               updateData.description = parsed.correction.newValue
             }
-            await prisma.transaction.update({ where: { id: transactionId }, data: updateData })
-            record = { transactionId, field: parsed.correction.field }
-            recordId = transactionId
+            if (Object.keys(updateData).length > 0) {
+              await prisma.transaction.update({ where: { id: transactionId }, data: updateData })
+              record = { transactionId, field: parsed.correction.field }
+              recordId = transactionId
+            }
           } catch (e) {
             if (e instanceof Error && e.message === 'Forbidden') {
               reply = "You can't modify that transaction."
             } else if (e instanceof Error && e.message.startsWith('Amount must be')) {
               reply = `That amount doesn't look right — ${e.message.toLowerCase()}.`
+            } else {
+              throw e
             }
           }
         }

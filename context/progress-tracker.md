@@ -6,7 +6,7 @@ Foundation
 
 ## Current Goal
 
-Feature 08: AI Message Parser (Trigger.dev)
+Feature 09: Wire Chat to Transactions
 
 ## Feature Status
 
@@ -19,7 +19,7 @@ Feature 08: AI Message Parser (Trigger.dev)
 | 05 | Dashboard Page | ✅ Done | Balance card, spending donut, monthly bar chart (Recharts), recent transactions list, empty state |
 | 06 | Transaction API | ✅ Done | POST/GET /api/transactions + DELETE /api/transactions/[id]. lib/validators.ts, lib/transactions.ts, lib/env.ts, lib/categories.ts updated |
 | 07 | Chat Interface UI | ✅ Done | Full-height chat page, 7 components, Chat nav item, local echo, typing indicator, welcome message |
-| 08 | AI Message Parser (Trigger.dev) | 🔲 Planned | |
+| 08 | AI Message Parser (Trigger.dev) | ✅ Done | Trigger.dev v4 schemaTask, Gemini generateObject, 7 intents, all security layers applied, ChatMessage save with token metadata |
 | 09 | Wire Chat to Transactions | 🔲 Planned | |
 | 10 | Categories & Auto-categorization | 🔲 Planned | |
 | 11 | Budget Limits | 🔲 Planned | |
@@ -32,6 +32,7 @@ Feature 08: AI Message Parser (Trigger.dev)
 
 Status key: ✅ Done · 🔄 In Progress · 🔲 Planned · 🚧 Blocked
 
+- **2026-05-20** — Feature 08 (AI Message Parser): trigger/parse-message.ts (schemaTask, 7 intents, generateObject with gemini-2.0-flash, <user_input> injection hardening), lib/prompts/parse-message.v1.ts, trigger.config.ts (modern Prisma mode), POST /api/chat + GET /api/chat/result/[runId]. Review fixed: NaN bypass in validateAmount (isNaN guard added), correction intent now scans 10 recent messages for one with transactionId (not just the last), invalid reminder dates guarded with isNaN check, DB errors re-thrown instead of swallowed, tasks.trigger wrapped with 503 fallback. Two issues logged: run ownership check and Clerk keys in Trigger.dev env. pnpm build exits 0.
 - **2026-05-20** — Feature 07 (Chat Interface UI): app/(dashboard)/chat/page.tsx + 7 components (ChatWindow, MessageList, MessageBubble, ChatInput, TypingIndicator, TransactionCard placeholder, types/chat.ts). Chat nav item added to lib/nav.ts. Local echo with 1.2s typing indicator, welcome message via useEffect, Enter-to-send, Shift+Enter newline, date separators. Review fixed: typing-indicator dots `bg-muted` → `bg-[--text-muted]` (near-invisible → medium gray); `message-bubble.tsx` gained `'use client'` to lock in client-only rendering intent. pnpm build exits 0.
 - **2026-05-20** — Feature 06 (Transaction API): POST/GET /api/transactions + DELETE /api/transactions/[id]. lib/validators.ts (validateAmount, assertOwnership), lib/transactions.ts (createTransaction, deleteTransaction, getUserTransactions — all atomic via Prisma $transaction), lib/env.ts (startup env validation), lib/categories.ts (CATEGORY_IDS const tuple + getCategoryById). Review fixed: double DB fetch in DELETE collapsed to single fetch, date string validation added with Zod refine. pnpm build exits 0.
 

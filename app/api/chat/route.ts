@@ -23,11 +23,14 @@ export async function POST(req: NextRequest) {
 
   const user = await getOrCreateUser(clerkId)
 
-  const handle = await tasks.trigger<typeof parseMessage>('parse-message', {
-    userId: user.id,
-    clerkId,
-    message: parsed.data.message,
-  })
-
-  return NextResponse.json({ data: { runId: handle.id } }, { status: 202 })
+  try {
+    const handle = await tasks.trigger<typeof parseMessage>('parse-message', {
+      userId: user.id,
+      clerkId,
+      message: parsed.data.message,
+    })
+    return NextResponse.json({ data: { runId: handle.id } }, { status: 202 })
+  } catch {
+    return NextResponse.json({ error: 'Failed to queue message. Please try again.' }, { status: 503 })
+  }
 }
