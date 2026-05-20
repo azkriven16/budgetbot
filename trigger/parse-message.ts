@@ -91,7 +91,7 @@ export const parseMessage = schemaTask({
     })()
 
     if (!aiResult) {
-      const reply = "I had trouble understanding that. Could you try rephrasing?"
+      const reply = "Sorry, I'm having trouble reaching my AI service right now. Please try again in a moment."
       await prisma.chatMessage.create({
         data: { userId: payload.userId, role: 'ASSISTANT', content: reply },
       })
