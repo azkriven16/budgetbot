@@ -6,12 +6,14 @@ import type { ChatMessage, TransactionData } from '@/types/chat'
 import { MessageList } from './message-list'
 import { ChatInput } from './chat-input'
 
-const WELCOME: ChatMessage = {
-  id: 'welcome',
-  role: 'assistant',
-  content:
-    "Hey! 👋 I'm BudgBot. Tell me what you spent or earned today — like 'spent $45 on groceries' or 'got paid $2000'.",
-  createdAt: new Date(),
+function makeWelcome(): ChatMessage {
+  return {
+    id: 'welcome',
+    role: 'assistant',
+    content:
+      "Hey! 👋 I'm BudgBot. Tell me what you spent or earned today — like 'spent $45 on groceries' or 'got paid $2000'.",
+    createdAt: new Date(),
+  }
 }
 
 const TERMINAL_STATUSES = new Set([
@@ -48,7 +50,7 @@ interface RunOutput {
 
 export function ChatWindow() {
   const router = useRouter()
-  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME])
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [makeWelcome()])
   const [pending, setPending] = useState(false)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -120,7 +122,26 @@ export function ChatWindow() {
       return
     }
 
+    let pollTicks = 0
+    const MAX_POLL_TICKS = 20 // 30s at 1.5s interval
+
     pollRef.current = setInterval(async () => {
+      pollTicks++
+      if (pollTicks > MAX_POLL_TICKS) {
+        stopPolling()
+        setPending(false)
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            role: 'assistant',
+            content: "That took too long. Please try again.",
+            createdAt: new Date(),
+          },
+        ])
+        return
+      }
+
       try {
         const res = await fetch(`/api/chat/result/${runId}`)
         if (!res.ok) return

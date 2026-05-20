@@ -29,7 +29,7 @@ export function TransactionCard({
         <Icon size={16} style={{ color }} />
       </span>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-primary truncate">{description}</p>
+        <p className="text-sm font-medium text-primary truncate">{description || category}</p>
         <p className="text-xs text-muted">Balance: {fmt.format(newBalance)}</p>
       </div>
       <span
