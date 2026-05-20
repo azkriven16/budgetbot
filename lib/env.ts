@@ -2,6 +2,8 @@ const required = [
   'DATABASE_URL',
   'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY',
   'CLERK_SECRET_KEY',
+  'GOOGLE_AI_API_KEY',
+  'TRIGGER_SECRET_KEY',
 ] as const
 
 for (const key of required) {
