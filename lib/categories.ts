@@ -18,7 +18,22 @@ interface CategoryConfig {
   dim: string
 }
 
-export const CATEGORIES: Record<string, CategoryConfig> = {
+export const CATEGORY_IDS = [
+  'Food',
+  'Transport',
+  'Shopping',
+  'Entertainment',
+  'Health',
+  'Salary',
+  'Subscriptions',
+  'Investments',
+  'Savings',
+  'Other',
+] as const
+
+export type CategoryId = (typeof CATEGORY_IDS)[number]
+
+export const CATEGORIES: Record<CategoryId, CategoryConfig> = {
   Food:          { icon: UtensilsCrossed, color: 'var(--cat-food)',          dim: 'var(--cat-food-dim)' },
   Transport:     { icon: Car,            color: 'var(--cat-transport)',      dim: 'var(--cat-transport-dim)' },
   Shopping:      { icon: ShoppingBag,    color: 'var(--cat-shopping)',       dim: 'var(--cat-shopping-dim)' },
@@ -32,5 +47,9 @@ export const CATEGORIES: Record<string, CategoryConfig> = {
 }
 
 export function getCategory(name: string): CategoryConfig {
-  return CATEGORIES[name] ?? CATEGORIES.Other!
+  return CATEGORIES[name as CategoryId] ?? CATEGORIES.Other
+}
+
+export function getCategoryById(id: string): CategoryConfig | undefined {
+  return CATEGORIES[id as CategoryId]
 }
