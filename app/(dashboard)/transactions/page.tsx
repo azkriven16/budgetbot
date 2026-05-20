@@ -23,7 +23,9 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
   if (!clerkId) redirect('/sign-in')
 
   const params = await searchParams
-  const month = params.month ?? currentMonth()
+  const monthRegex = /^\d{4}-\d{2}$/
+  const month =
+    params.month && monthRegex.test(params.month) ? params.month : currentMonth()
   const type: TransactionType | undefined =
     params.type === 'INCOME' || params.type === 'EXPENSE' ? params.type : undefined
   const category = CATEGORY_IDS.includes(params.category as (typeof CATEGORY_IDS)[number])
@@ -50,7 +52,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
   return (
     <div className="flex flex-col gap-4 p-4 md:p-6">
       <h1 className="text-xl font-semibold text-primary">Transactions</h1>
-      <TransactionFilters month={month} category={params.category} type={params.type} />
+      <TransactionFilters month={month} category={category} type={params.type} />
       {serialized.length === 0 ? (
         <TransactionEmpty />
       ) : (

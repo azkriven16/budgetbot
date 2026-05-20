@@ -6,7 +6,7 @@ Foundation
 
 ## Current Goal
 
-Feature 09: Wire Chat to Transactions
+Feature 11: Budget Limits
 
 ## Feature Status
 
@@ -21,7 +21,7 @@ Feature 09: Wire Chat to Transactions
 | 07 | Chat Interface UI | ✅ Done | Full-height chat page, 7 components, Chat nav item, local echo, typing indicator, welcome message |
 | 08 | AI Message Parser (Trigger.dev) | ✅ Done | Trigger.dev v4 schemaTask, Gemini generateObject, 7 intents, all security layers applied, ChatMessage save with token metadata |
 | 09 | Wire Chat to Transactions | ✅ Done | GET /api/chat/history, ChatWindow polls POST /api/chat + GET /api/chat/result/[runId], real TransactionCard with category icon + balance |
-| 10 | Categories & Auto-categorization | 🔲 Planned | |
+| 10 | Transactions Page | ✅ Done | Server Component page, TransactionFilters (month/category/type via URL params), TransactionList (grouped by date, optimistic delete), TransactionItem, TransactionEmpty |
 | 11 | Budget Limits | 🔲 Planned | |
 | 12 | Savings Goals | 🔲 Planned | |
 | 13 | Investment Tracking | 🔲 Planned | |
@@ -32,6 +32,7 @@ Feature 09: Wire Chat to Transactions
 
 Status key: ✅ Done · 🔄 In Progress · 🔲 Planned · 🚧 Blocked
 
+- **2026-05-20** — Feature 10 (Transactions Page): Server Component page reads month/category/type from URL searchParams (month validated with regex guard). TransactionFilters updates URL params on change. TransactionList groups by date (Today/Yesterday/date), optimistic delete with error restore, router.refresh() after success. TransactionItem shows category icon+color, income green / expense red, delete button. TransactionEmpty for zero results. Review fixed: unvalidated month param → 500 (added regex guard); raw params.category passed to filter display (now passes validated value). pnpm build exits 0.
 - **2026-05-20** — Feature 09 (Wire Chat to Transactions): types/chat.ts (TransactionData + optional transaction field), GET /api/chat/history (last 50 msgs, desc→reverse), ChatWindow polls POST /api/chat + GET /api/chat/result/[runId] every 1.5s, history replaces welcome on mount, router.refresh() after transaction parse. TransactionCard wired with real category icon, formatted amount, and updated balance. Review fixed: WELCOME date frozen at module scope → moved to makeWelcome() factory so createdAt is fresh per mount; poll had no timeout → added 20-tick / 30s cap with friendly error message; empty description falls back to category name. pnpm build exits 0.
 - **2026-05-20** — Feature 08 (AI Message Parser): trigger/parse-message.ts (schemaTask, 7 intents, generateObject with gemini-2.0-flash, <user_input> injection hardening), lib/prompts/parse-message.v1.ts, trigger.config.ts (modern Prisma mode), POST /api/chat + GET /api/chat/result/[runId]. Review fixed: NaN bypass in validateAmount (isNaN guard added), correction intent now scans 10 recent messages for one with transactionId (not just the last), invalid reminder dates guarded with isNaN check, DB errors re-thrown instead of swallowed, tasks.trigger wrapped with 503 fallback. Two issues logged: run ownership check and Clerk keys in Trigger.dev env. pnpm build exits 0.
 - **2026-05-20** — Feature 07 (Chat Interface UI): app/(dashboard)/chat/page.tsx + 7 components (ChatWindow, MessageList, MessageBubble, ChatInput, TypingIndicator, TransactionCard placeholder, types/chat.ts). Chat nav item added to lib/nav.ts. Local echo with 1.2s typing indicator, welcome message via useEffect, Enter-to-send, Shift+Enter newline, date separators. Review fixed: typing-indicator dots `bg-muted` → `bg-[--text-muted]` (near-invisible → medium gray); `message-bubble.tsx` gained `'use client'` to lock in client-only rendering intent. pnpm build exits 0.

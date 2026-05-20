@@ -20,6 +20,12 @@ Active bugs and regressions. Remove an entry when the fix ships.
 **File:** app/api/chat/result/[runId]/route.ts:14
 `runs.retrieve(runId)` returns task output for any runId without verifying the caller owns that run. An authenticated user who guesses another user's runId can read their parsed financial data. Full fix requires storing `runId → userId` in the ChatMessage or a separate table. Spec 09 (Wire Chat) should either add this storage or at minimum note it as a known limitation. Low practical risk given BudgBot's single-user threat model and the opacity of Trigger.dev run IDs.
 
+## [Open] SerializedTransaction type lives in a UI component file
+**Spec:** Feature 10
+**Severity:** Minor
+**File:** components/transactions/transaction-item.tsx:8
+`SerializedTransaction` is exported from a UI component — the canonical location per `code-standards.md` is `types/`. Not a bug today, but any new consumer will import from a UI file, which is confusing and couples type to presentation. Move to `types/transaction.ts` in a future cleanup pass.
+
 ## [Open] Clerk env keys required in Trigger.dev cloud worker (production)
 **Spec:** Feature 08
 **Severity:** Major
