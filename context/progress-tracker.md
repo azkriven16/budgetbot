@@ -17,7 +17,7 @@ Feature 06: Transaction API
 | 03 | Prisma Schema & Data Layer | ✅ Done | Prisma 7.8.0 + pg adapter, Neon PostgreSQL, 8 models, migration applied, lib/prisma.ts + lib/user.ts |
 | 04 | App Shell & Navigation | ✅ Done | Mobile bottom nav + desktop sidebar, 4 placeholder pages, getOrCreateUser in layout |
 | 05 | Dashboard Page | ✅ Done | Balance card, spending donut, monthly bar chart (Recharts), recent transactions list, empty state |
-| 06 | Transaction API | 🔲 Planned | |
+| 06 | Transaction API | ✅ Done | POST/GET /api/transactions + DELETE /api/transactions/[id]. lib/validators.ts, lib/transactions.ts, lib/env.ts, lib/categories.ts updated |
 | 07 | Chat Interface UI | 🔲 Planned | |
 | 08 | AI Message Parser (Trigger.dev) | 🔲 Planned | |
 | 09 | Wire Chat to Transactions | 🔲 Planned | |
@@ -31,6 +31,8 @@ Feature 06: Transaction API
 | 17 | Security Hardening | 🔲 Planned | Rate limiting, env validation, amount bounds, ownership checks |
 
 Status key: ✅ Done · 🔄 In Progress · 🔲 Planned · 🚧 Blocked
+
+- **2026-05-20** — Feature 06 (Transaction API): POST/GET /api/transactions + DELETE /api/transactions/[id]. lib/validators.ts (validateAmount, assertOwnership), lib/transactions.ts (createTransaction, deleteTransaction, getUserTransactions — all atomic via Prisma $transaction), lib/env.ts (startup env validation), lib/categories.ts (CATEGORY_IDS const tuple + getCategoryById). Review fixed: double DB fetch in DELETE collapsed to single fetch, date string validation added with Zod refine. pnpm build exits 0.
 
 ## Open Questions
 

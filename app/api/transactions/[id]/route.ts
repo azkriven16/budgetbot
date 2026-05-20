@@ -1,3 +1,4 @@
+import '@/lib/env'
 import { auth } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { getOrCreateUser } from '@/lib/user'
@@ -24,7 +25,7 @@ export async function DELETE(
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  await deleteTransaction(user.id, id)
+  await deleteTransaction(user.id, transaction)
 
   return NextResponse.json({ data: { success: true } })
 }

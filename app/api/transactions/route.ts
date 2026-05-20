@@ -10,7 +10,10 @@ const createSchema = z.object({
   type: z.enum(['INCOME', 'EXPENSE']),
   category: z.enum(CATEGORY_IDS),
   description: z.string().optional(),
-  date: z.string().optional(),
+  date: z
+    .string()
+    .optional()
+    .refine((v) => !v || !isNaN(new Date(v).getTime()), { message: 'Invalid date' }),
 })
 
 const querySchema = z.object({

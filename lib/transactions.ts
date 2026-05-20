@@ -50,13 +50,12 @@ export async function createTransaction(userId: string, data: TransactionInput) 
   })
 }
 
-export async function deleteTransaction(userId: string, transactionId: string) {
+export async function deleteTransaction(
+  userId: string,
+  transaction: { id: string; amount: Prisma.Decimal; type: TransactionType },
+) {
   return prisma.$transaction(async (tx) => {
-    const transaction = await tx.transaction.findUniqueOrThrow({
-      where: { id: transactionId },
-    })
-
-    await tx.transaction.delete({ where: { id: transactionId } })
+    await tx.transaction.delete({ where: { id: transaction.id } })
 
     const updated = await tx.user.update({
       where: { id: userId },
