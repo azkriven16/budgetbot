@@ -6,7 +6,7 @@ Foundation
 
 ## Current Goal
 
-Feature 06: Transaction API
+Feature 08: AI Message Parser (Trigger.dev)
 
 ## Feature Status
 
@@ -18,7 +18,7 @@ Feature 06: Transaction API
 | 04 | App Shell & Navigation | ✅ Done | Mobile bottom nav + desktop sidebar, 4 placeholder pages, getOrCreateUser in layout |
 | 05 | Dashboard Page | ✅ Done | Balance card, spending donut, monthly bar chart (Recharts), recent transactions list, empty state |
 | 06 | Transaction API | ✅ Done | POST/GET /api/transactions + DELETE /api/transactions/[id]. lib/validators.ts, lib/transactions.ts, lib/env.ts, lib/categories.ts updated |
-| 07 | Chat Interface UI | 🔲 Planned | |
+| 07 | Chat Interface UI | ✅ Done | Full-height chat page, 7 components, Chat nav item, local echo, typing indicator, welcome message |
 | 08 | AI Message Parser (Trigger.dev) | 🔲 Planned | |
 | 09 | Wire Chat to Transactions | 🔲 Planned | |
 | 10 | Categories & Auto-categorization | 🔲 Planned | |
@@ -32,6 +32,7 @@ Feature 06: Transaction API
 
 Status key: ✅ Done · 🔄 In Progress · 🔲 Planned · 🚧 Blocked
 
+- **2026-05-20** — Feature 07 (Chat Interface UI): app/(dashboard)/chat/page.tsx + 7 components (ChatWindow, MessageList, MessageBubble, ChatInput, TypingIndicator, TransactionCard placeholder, types/chat.ts). Chat nav item added to lib/nav.ts. Local echo with 1.2s typing indicator, welcome message via useEffect, Enter-to-send, Shift+Enter newline, date separators. Review fixed: typing-indicator dots `bg-muted` → `bg-[--text-muted]` (near-invisible → medium gray); `message-bubble.tsx` gained `'use client'` to lock in client-only rendering intent. pnpm build exits 0.
 - **2026-05-20** — Feature 06 (Transaction API): POST/GET /api/transactions + DELETE /api/transactions/[id]. lib/validators.ts (validateAmount, assertOwnership), lib/transactions.ts (createTransaction, deleteTransaction, getUserTransactions — all atomic via Prisma $transaction), lib/env.ts (startup env validation), lib/categories.ts (CATEGORY_IDS const tuple + getCategoryById). Review fixed: double DB fetch in DELETE collapsed to single fetch, date string validation added with Zod refine. pnpm build exits 0.
 
 ## Open Questions
