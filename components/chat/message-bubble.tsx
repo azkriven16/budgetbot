@@ -1,6 +1,7 @@
 'use client'
 
 import type { ChatMessage } from '@/types/chat'
+import { TransactionCard } from './transaction-card'
 
 interface MessageBubbleProps {
   message: ChatMessage
@@ -30,6 +31,9 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           }`}
         >
           {message.content}
+          {!isUser && message.transaction && (
+            <TransactionCard {...message.transaction} />
+          )}
         </div>
         <span className="text-xs text-muted px-1">{formatTime(message.createdAt)}</span>
       </div>
