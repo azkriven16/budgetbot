@@ -1,0 +1,18 @@
+enum MessageRole {
+  USER
+  ASSISTANT
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  userId    String
+  role      MessageRole
+  content   String
+  metadata  Json?
+  createdAt DateTime    @default(now())
+
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, createdAt])
+}

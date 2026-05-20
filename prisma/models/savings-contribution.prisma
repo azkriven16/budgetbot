@@ -1,0 +1,10 @@
+model SavingsContribution {
+  id        String      @id @default(cuid())
+  goalId    String
+  amount    Decimal
+  createdAt DateTime    @default(now())
+
+  goal      SavingsGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
+}

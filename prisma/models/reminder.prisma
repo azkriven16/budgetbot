@@ -1,0 +1,13 @@
+model Reminder {
+  id         String   @id @default(cuid())
+  userId     String
+  message    String
+  recurrence String
+  nextDueAt  DateTime
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

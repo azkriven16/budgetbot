@@ -1,0 +1,169 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-jakarta);
+  --font-mono: var(--font-mono);
+  --font-heading: var(--font-jakarta);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* BudgBot design tokens */
+  --bg-base: #FAFAF8;
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #F5F4EF;
+  --bg-subtle: #EEEDE8;
+  --border-default: #E4E3DC;
+  --border-subtle: #D0CFC8;
+  --text-primary: #18181B;
+  --text-secondary: #52525B;
+  --text-muted: #A1A1AA;
+  --text-faint: #D4D4D8;
+  --accent-primary: #F59E0B;
+  --accent-dim: rgba(245, 158, 11, 0.12);
+  --accent-text: #B45309;
+  --state-income: #10B981;
+  --state-income-dim: rgba(16, 185, 129, 0.12);
+  --state-expense: #F43F5E;
+  --state-expense-dim: rgba(244, 63, 94, 0.12);
+  --state-error: #EF4444;
+  --state-success: #10B981;
+  --state-warning: #F59E0B;
+
+  /* Category color tokens */
+  --cat-food: #F97316;
+  --cat-transport: #3B82F6;
+  --cat-shopping: #A855F7;
+  --cat-entertainment: #EC4899;
+  --cat-health: #EF4444;
+  --cat-salary: #10B981;
+  --cat-subscriptions: #6366F1;
+  --cat-investments: #F59E0B;
+  --cat-savings: #14B8A6;
+  --cat-other: #A1A1AA;
+  --cat-food-dim: rgba(249, 115, 22, 0.10);
+  --cat-transport-dim: rgba(59, 130, 246, 0.10);
+  --cat-shopping-dim: rgba(168, 85, 247, 0.10);
+  --cat-entertainment-dim: rgba(236, 72, 153, 0.10);
+  --cat-health-dim: rgba(239, 68, 68, 0.10);
+  --cat-salary-dim: rgba(16, 185, 129, 0.10);
+  --cat-subscriptions-dim: rgba(99, 102, 241, 0.10);
+  --cat-investments-dim: rgba(245, 158, 11, 0.10);
+  --cat-savings-dim: rgba(20, 184, 166, 0.10);
+  --cat-other-dim: rgba(161, 161, 170, 0.10);
+
+  /* shadcn tokens mapped to BudgBot values */
+  --background: var(--bg-base);
+  --foreground: var(--text-primary);
+  --card: var(--bg-surface);
+  --card-foreground: var(--text-primary);
+  --popover: var(--bg-surface);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--text-primary);
+  --primary-foreground: var(--bg-surface);
+  --secondary: var(--bg-elevated);
+  --secondary-foreground: var(--text-primary);
+  --muted: var(--bg-subtle);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--accent-primary);
+  --accent-foreground: #ffffff;
+  --destructive: var(--state-expense);
+  --border: var(--border-default);
+  --input: var(--border-default);
+  --ring: var(--accent-primary);
+  --radius: 0.75rem;
+  --sidebar: var(--bg-elevated);
+  --sidebar-foreground: var(--text-primary);
+  --sidebar-primary: var(--accent-primary);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--bg-subtle);
+  --sidebar-accent-foreground: var(--text-primary);
+  --sidebar-border: var(--border-default);
+  --sidebar-ring: var(--accent-primary);
+  --chart-1: var(--state-income);
+  --chart-2: var(--accent-primary);
+  --chart-3: var(--state-expense);
+  --chart-4: #3B82F6;
+  --chart-5: #A855F7;
+}
+
+@layer utilities {
+  /* Background tokens */
+  .bg-base { background-color: var(--bg-base); }
+  .bg-surface { background-color: var(--bg-surface); }
+  .bg-elevated { background-color: var(--bg-elevated); }
+  .bg-subtle { background-color: var(--bg-subtle); }
+  .bg-accent { background-color: var(--accent-primary); }
+  .bg-accent-dim { background-color: var(--accent-dim); }
+  .bg-income { background-color: var(--state-income); }
+  .bg-income-dim { background-color: var(--state-income-dim); }
+  .bg-expense { background-color: var(--state-expense); }
+  .bg-expense-dim { background-color: var(--state-expense-dim); }
+
+  /* Text tokens */
+  .text-primary { color: var(--text-primary); }
+  .text-secondary { color: var(--text-secondary); }
+  .text-muted { color: var(--text-muted); }
+  .text-faint { color: var(--text-faint); }
+  .text-accent { color: var(--accent-primary); }
+  .text-accent-text { color: var(--accent-text); }
+  .text-income { color: var(--state-income); }
+  .text-expense { color: var(--state-expense); }
+  .text-error { color: var(--state-error); }
+  .text-success { color: var(--state-success); }
+  .text-warning { color: var(--state-warning); }
+
+  /* Border tokens */
+  .border-default { border-color: var(--border-default); }
+  .border-subtle { border-color: var(--border-subtle); }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--font-jakarta), sans-serif;
+  }
+}

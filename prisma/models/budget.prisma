@@ -1,0 +1,15 @@
+enum BudgetPeriod {
+  MONTHLY
+}
+
+model Budget {
+  id          String       @id @default(cuid())
+  userId      String
+  category    String
+  limitAmount Decimal
+  period      BudgetPeriod @default(MONTHLY)
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, category])
+}

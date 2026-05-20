@@ -1,0 +1,19 @@
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  userId      String
+  amount      Decimal
+  type        TransactionType
+  category    String
+  description String?
+  date        DateTime
+
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, date])
+}
