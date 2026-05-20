@@ -84,7 +84,8 @@ export const parseMessage = schemaTask({
           system: PARSE_MESSAGE_SYSTEM_PROMPT,
           prompt: userContent,
         })
-      } catch {
+      } catch (e) {
+        console.error('[parse-message] generateObject failed:', e)
         return null
       }
     })()
