@@ -1,4 +1,4 @@
-import './env'
+import '@/lib/env'
 import { prisma } from './prisma'
 
 export interface BudgetStatus {
