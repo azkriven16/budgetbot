@@ -11,6 +11,7 @@ import { PARSE_MESSAGE_SYSTEM_PROMPT } from '@/lib/prompts/parse-message.v1'
 import { getBudgetStatus } from '@/lib/budgets'
 import { contributeToGoal } from '@/lib/goals'
 import { createInvestment, ValidationError } from '@/lib/investments'
+import { parseRecurrence } from '@/lib/reminders'
 
 const anthropic = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
@@ -195,20 +196,27 @@ export const parseMessage = schemaTask({
         reply =
           "You've reached the maximum of 10 active reminders. Delete some before adding new ones."
       } else {
-        const nextDueAt = new Date(parsed.reminder.nextDueAt)
-        if (isNaN(nextDueAt.getTime())) {
-          reply = "I couldn't set the reminder — the date format wasn't recognized."
-        } else {
-          const reminder = await prisma.reminder.create({
-            data: {
-              userId: payload.userId,
-              message: parsed.reminder.message,
-              recurrence: parsed.reminder.recurrence,
-              nextDueAt,
-            },
-          })
-          record = reminder
-          recordId = reminder.id
+        const { recurrenceCron, nextDueAt, isDefault } = parseRecurrence(parsed.reminder.recurrence)
+        const reminder = await prisma.reminder.create({
+          data: {
+            userId: payload.userId,
+            message: parsed.reminder.message,
+            recurrence: recurrenceCron,
+            nextDueAt,
+          },
+        })
+        record = reminder
+        recordId = reminder.id
+        const formattedDate = nextDueAt.toLocaleDateString('en-US', {
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+          timeZone: 'UTC',
+        })
+        reply = `⏰ Got it! I'll remind you to ${parsed.reminder.message} — next reminder: ${formattedDate}.`
+        if (isDefault) {
+          reply +=
+            " I'll remind you monthly — you can create a new reminder with more specific timing if needed."
         }
       }
     } else if (parsed.intent === 'correction' && parsed.correction) {

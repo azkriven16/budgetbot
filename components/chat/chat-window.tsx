@@ -6,6 +6,7 @@ import { Trash2 } from 'lucide-react'
 import type { ChatMessage, TransactionData } from '@/types/chat'
 import { MessageList } from './message-list'
 import { ChatInput } from './chat-input'
+import { RemindersPanel } from './RemindersPanel'
 
 function makeWelcome(): ChatMessage {
   return {
@@ -235,6 +236,7 @@ export function ChatWindow() {
           {resetting ? 'Clearing…' : 'Clear history'}
         </button>
       </div>
+      <RemindersPanel />
       <MessageList messages={messages} pending={pending} onUndo={handleUndo} />
       <ChatInput onSend={handleSend} disabled={pending} />
     </div>
