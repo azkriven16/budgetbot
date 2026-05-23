@@ -9,6 +9,7 @@ import { validateAmount, assertOwnership } from '@/lib/validators'
 import { CATEGORY_IDS } from '@/lib/categories'
 import { PARSE_MESSAGE_SYSTEM_PROMPT } from '@/lib/prompts/parse-message.v1'
 import { getBudgetStatus } from '@/lib/budgets'
+import { contributeToGoal } from '@/lib/goals'
 
 const anthropic = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
@@ -141,25 +142,19 @@ export const parseMessage = schemaTask({
     } else if (parsed.intent === 'savings_contribution' && parsed.savingsContribution) {
       try {
         validateAmount(parsed.savingsContribution.amount)
-        const goal = await prisma.savingsGoal.findFirst({
-          where: { userId: payload.userId, name: parsed.savingsContribution.goalName },
-        })
-        if (!goal) {
-          reply = `I couldn't find a savings goal named "${parsed.savingsContribution.goalName}". Create one first!`
+        const result = await contributeToGoal(
+          payload.userId,
+          parsed.savingsContribution.goalName,
+          parsed.savingsContribution.amount,
+        )
+        if (!result) {
+          reply = `I couldn't find a savings goal named "${parsed.savingsContribution.goalName}". Create one in the Goals page first!`
         } else {
-          const contrib = parsed.savingsContribution
-          const contribution = await prisma.$transaction(async (tx) => {
-            const c = await tx.savingsContribution.create({
-              data: { goalId: goal.id, amount: contrib.amount },
-            })
-            await tx.savingsGoal.update({
-              where: { id: goal.id },
-              data: { currentAmount: { increment: contrib.amount } },
-            })
-            return c
-          })
-          record = contribution
-          recordId = contribution.id
+          record = result
+          recordId = result.goalId
+          if (result.justCompleted) {
+            reply += `\n\n🎉 You've reached your ${result.goalName} goal!`
+          }
         }
       } catch (e) {
         if (e instanceof Error && e.message.startsWith('Amount must be')) {
