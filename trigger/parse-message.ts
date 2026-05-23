@@ -10,6 +10,7 @@ import { CATEGORY_IDS } from '@/lib/categories'
 import { PARSE_MESSAGE_SYSTEM_PROMPT } from '@/lib/prompts/parse-message.v1'
 import { getBudgetStatus } from '@/lib/budgets'
 import { contributeToGoal } from '@/lib/goals'
+import { createInvestment, ValidationError } from '@/lib/investments'
 
 const anthropic = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
@@ -165,23 +166,22 @@ export const parseMessage = schemaTask({
       }
     } else if (parsed.intent === 'investment' && parsed.investment) {
       try {
-        validateAmount(parsed.investment.pricePerShare)
-        validateAmount(parsed.investment.shares)
-        const investment = await prisma.investment.create({
-          data: {
-            userId: payload.userId,
-            ticker: parsed.investment.ticker,
-            companyName: parsed.investment.companyName,
-            action: parsed.investment.action,
-            shares: parsed.investment.shares,
-            pricePerShare: parsed.investment.pricePerShare,
-            date: new Date(),
-          },
+        const inv = parsed.investment
+        const investment = await createInvestment(payload.userId, {
+          ticker: inv.ticker,
+          companyName: inv.companyName,
+          action: inv.action,
+          shares: inv.shares,
+          pricePerShare: inv.pricePerShare,
         })
         record = investment
         recordId = investment.id
+        const totalCost = inv.shares * inv.pricePerShare
+        reply = `📈 Logged: ${inv.action} ${inv.shares} ${inv.ticker.toUpperCase()} @ $${inv.pricePerShare.toFixed(2)}. Total cost: $${totalCost.toFixed(2)}.`
       } catch (e) {
-        if (e instanceof Error && e.message.startsWith('Amount must be')) {
+        if (e instanceof ValidationError) {
+          reply = e.message
+        } else if (e instanceof Error && e.message.startsWith('Amount must be')) {
           reply = `That amount doesn't look right — ${e.message.toLowerCase()}.`
         } else {
           throw e
