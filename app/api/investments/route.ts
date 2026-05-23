@@ -11,7 +11,12 @@ const bodySchema = z.object({
   action: z.enum(['BUY', 'SELL']),
   shares: z.number().positive(),
   pricePerShare: z.number().positive(),
-  date: z.string().optional(),
+  date: z
+    .string()
+    .optional()
+    .refine((d) => d === undefined || !isNaN(new Date(d).getTime()), {
+      message: 'Invalid date format',
+    }),
 })
 
 export async function POST(req: NextRequest) {
