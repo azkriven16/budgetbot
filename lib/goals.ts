@@ -1,4 +1,5 @@
 import '@/lib/env'
+import type { SavingsGoal } from '../app/generated/prisma/client'
 import { prisma } from './prisma'
 import { validateAmount } from './validators'
 
@@ -41,18 +42,7 @@ export async function getUserGoals(userId: string): Promise<GoalWithProgress[]> 
   })
 }
 
-export async function contributeToGoal(
-  userId: string,
-  goalName: string,
-  amount: number,
-): Promise<ContributeResult | null> {
-  validateAmount(amount)
-
-  const goal = await prisma.savingsGoal.findFirst({
-    where: { userId, name: { equals: goalName, mode: 'insensitive' } },
-  })
-  if (!goal) return null
-
+async function applyContribution(goal: SavingsGoal, amount: number): Promise<ContributeResult> {
   const newCurrentAmount = Number(goal.currentAmount) + amount
   const targetAmount = Number(goal.targetAmount)
   const justCompleted = !goal.isCompleted && newCurrentAmount >= targetAmount
@@ -72,31 +62,26 @@ export async function contributeToGoal(
   return { goalId: goal.id, goalName: goal.name, newAmount: newCurrentAmount, percentage, justCompleted }
 }
 
+export async function contributeToGoal(
+  userId: string,
+  goalName: string,
+  amount: number,
+): Promise<ContributeResult | null> {
+  validateAmount(amount)
+  const goal = await prisma.savingsGoal.findFirst({
+    where: { userId, name: { equals: goalName, mode: 'insensitive' } },
+  })
+  if (!goal) return null
+  return applyContribution(goal, amount)
+}
+
 export async function contributeToGoalById(
   userId: string,
   goalId: string,
   amount: number,
 ): Promise<ContributeResult | null> {
   validateAmount(amount)
-
   const goal = await prisma.savingsGoal.findUnique({ where: { id: goalId } })
   if (!goal || goal.userId !== userId) return null
-
-  const newCurrentAmount = Number(goal.currentAmount) + amount
-  const targetAmount = Number(goal.targetAmount)
-  const justCompleted = !goal.isCompleted && newCurrentAmount >= targetAmount
-  const percentage = targetAmount > 0 ? Math.min(Math.round((newCurrentAmount / targetAmount) * 100), 100) : 0
-
-  await prisma.$transaction(async (tx) => {
-    await tx.savingsContribution.create({ data: { goalId: goal.id, amount } })
-    await tx.savingsGoal.update({
-      where: { id: goal.id },
-      data: {
-        currentAmount: { increment: amount },
-        ...(justCompleted ? { isCompleted: true } : {}),
-      },
-    })
-  })
-
-  return { goalId: goal.id, goalName: goal.name, newAmount: newCurrentAmount, percentage, justCompleted }
+  return applyContribution(goal, amount)
 }

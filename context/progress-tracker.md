@@ -6,7 +6,7 @@ Foundation
 
 ## Current Goal
 
-Feature 12: Savings Goals
+Feature 13: Investment Tracking
 
 ## Feature Status
 
@@ -23,7 +23,7 @@ Feature 12: Savings Goals
 | 09 | Wire Chat to Transactions | ✅ Done | GET /api/chat/history, ChatWindow polls POST /api/chat + GET /api/chat/result/[runId], real TransactionCard with category icon + balance |
 | 10 | Transactions Page | ✅ Done | Server Component page, TransactionFilters (month/category/type via URL params), TransactionList (grouped by date, optimistic delete), TransactionItem, TransactionEmpty |
 | 11 | Budget Limits | ✅ Done | POST/GET /api/budgets + DELETE /api/budgets/[id], lib/budgets.ts (getBudgetStatus), BudgetProgress bars (green/amber/red), BudgetSettingsModal (upsert + remove), dashboard budget section, chat warning at ≥80% spend |
-| 12 | Savings Goals | 🔲 Planned | |
+| 12 | Savings Goals | ✅ Done | POST/GET /api/goals + DELETE /api/goals/[id] + POST /api/goals/[id]/contribute. lib/goals.ts (getUserGoals, contributeToGoal, contributeToGoalById). GoalCard, NewGoalDialog, GoalEmpty. Goals page with grid + empty state. Chat contribution with 🎉 completion message |
 | 13 | Investment Tracking | 🔲 Planned | |
 | 14 | Reminders | 🔲 Planned | |
 | 15 | AI Parser Eval Harness | 🔲 Planned | ADLC: behavioral tests for AI parser |
@@ -32,6 +32,7 @@ Feature 12: Savings Goals
 
 Status key: ✅ Done · 🔄 In Progress · 🔲 Planned · 🚧 Blocked
 
+- **2026-05-23** — Feature 12 (Savings Goals): POST/GET /api/goals + DELETE /api/goals/[id] + POST /api/goals/[id]/contribute. lib/goals.ts (getUserGoals, contributeToGoal by name with insensitive match, contributeToGoalById, shared applyContribution helper). GoalCard Server Component (amber progress bar, ✅ badge when complete). NewGoalDialog client component (emoji + name + target amount). GoalEmpty with CTA. Goals page grid layout. trigger/parse-message.ts savings_contribution updated: calls contributeToGoal, appends 🎉 on justCompleted. Review fixed: extracted applyContribution to eliminate 12-line duplication between contribute functions. pnpm build exits 0.
 - **2026-05-23** — Feature 11 (Budget Limits): POST/GET /api/budgets + DELETE /api/budgets/[id]. lib/budgets.ts (getBudgetStatus — parallel budget + spend queries, current-month window). BudgetProgress Server Component (green/amber/red bar via bg-income/bg-warning/bg-error tokens). BudgetSettingsModal (upsert via POST, remove via DELETE, per-category input + error display). Dashboard budget section below recent transactions with empty state. trigger/parse-message.ts updated to append ≥80% warning after EXPENSE. Review fixed: lib/budgets.ts relative env import → @/lib/env alias. pnpm build exits 0.
 - **2026-05-20** — Feature 10 (Transactions Page): Server Component page reads month/category/type from URL searchParams (month validated with regex guard). TransactionFilters updates URL params on change. TransactionList groups by date (Today/Yesterday/date), optimistic delete with error restore, router.refresh() after success. TransactionItem shows category icon+color, income green / expense red, delete button. TransactionEmpty for zero results. Review fixed: unvalidated month param → 500 (added regex guard); raw params.category passed to filter display (now passes validated value). pnpm build exits 0.
 - **2026-05-20** — Feature 09 (Wire Chat to Transactions): types/chat.ts (TransactionData + optional transaction field), GET /api/chat/history (last 50 msgs, desc→reverse), ChatWindow polls POST /api/chat + GET /api/chat/result/[runId] every 1.5s, history replaces welcome on mount, router.refresh() after transaction parse. TransactionCard wired with real category icon, formatted amount, and updated balance. Review fixed: WELCOME date frozen at module scope → moved to makeWelcome() factory so createdAt is fresh per mount; poll had no timeout → added 20-tick / 30s cap with friendly error message; empty description falls back to category name. pnpm build exits 0.
