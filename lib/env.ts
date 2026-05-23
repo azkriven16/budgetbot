@@ -1,13 +1,13 @@
-const required = [
-  'DATABASE_URL',
-  'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY',
-  'CLERK_SECRET_KEY',
-  'ANTHROPIC_API_KEY',
-  'TRIGGER_SECRET_KEY',
-] as const
+import { z } from 'zod'
 
-for (const key of required) {
-  if (!process.env[key]) {
-    throw new Error(`Missing required environment variable: ${key}`)
-  }
-}
+const schema = z.object({
+  DATABASE_URL: z.string().url(),
+  CLERK_SECRET_KEY: z.string().min(1),
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),
+  ANTHROPIC_API_KEY: z.string().min(1),
+  TRIGGER_SECRET_KEY: z.string().min(1),
+  UPSTASH_REDIS_REST_URL: z.string().url(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
+})
+
+export const env = schema.parse(process.env)

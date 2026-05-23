@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { getOrCreateUser } from '@/lib/user'
 import { deactivateReminder } from '@/lib/reminders'
+import { ForbiddenError } from '@/lib/validators'
 
 export async function DELETE(
   _req: NextRequest,
@@ -19,7 +20,7 @@ export async function DELETE(
     if (!reminder) return NextResponse.json({ error: 'Not found' }, { status: 404 })
     return NextResponse.json({ data: { success: true } })
   } catch (e) {
-    if (e instanceof Error && e.message === 'Forbidden') {
+    if (e instanceof ForbiddenError) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
     throw e

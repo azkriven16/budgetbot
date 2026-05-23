@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { tasks } from '@trigger.dev/sdk'
 import { getOrCreateUser } from '@/lib/user'
+import { chatRateLimit } from '@/lib/rate-limit'
 import type { parseMessage } from '@/trigger/parse-message'
 
 const bodySchema = z.object({
@@ -22,6 +23,18 @@ export async function POST(req: NextRequest) {
   }
 
   const user = await getOrCreateUser(clerkId)
+
+  try {
+    const { success } = await chatRateLimit.limit(user.id)
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Try again in a moment.' },
+        { status: 429 },
+      )
+    }
+  } catch {
+    // fail open — Redis unavailable
+  }
 
   try {
     const handle = await tasks.trigger<typeof parseMessage>('parse-message', {

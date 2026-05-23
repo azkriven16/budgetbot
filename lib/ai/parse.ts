@@ -1,12 +1,10 @@
+import '@/lib/env'
 import { generateObject } from 'ai'
 import { createAnthropic } from '@ai-sdk/anthropic'
 import { z } from 'zod'
 import { CATEGORY_IDS } from '@/lib/categories'
 import { PARSE_MESSAGE_SYSTEM_PROMPT } from '@/lib/prompts/parse-message.v1'
-
-if (!process.env.ANTHROPIC_API_KEY) {
-  throw new Error('Missing required environment variable: ANTHROPIC_API_KEY')
-}
+import { validateAmount } from '@/lib/validators'
 
 const anthropic = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -70,5 +68,12 @@ export async function parseMessage(message: string): Promise<ParseResult> {
     system: PARSE_MESSAGE_SYSTEM_PROMPT,
     prompt: userContent,
   })
+
+  if (object.transaction) validateAmount(object.transaction.amount)
+  if (object.investment) {
+    validateAmount(object.investment.pricePerShare)
+    validateAmount(object.investment.shares)
+  }
+
   return object
 }

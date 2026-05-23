@@ -53,9 +53,9 @@ export async function applyCorrection(
   let updated: typeof transaction
 
   if (field === 'amount') {
-    const newAmount = parseFloat(newValue)
-    if (isNaN(newAmount)) throw new Error('Amount must be a valid number')
-    validateAmount(newAmount)
+    const parsed = parseFloat(newValue)
+    if (isNaN(parsed)) throw new Error('Amount must be a valid number')
+    const newAmount = validateAmount(parsed)
 
     // Balance delta: INCOME gains newAmount-oldAmount, EXPENSE gains oldAmount-newAmount
     const delta =
