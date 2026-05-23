@@ -3,12 +3,13 @@ import { schemaTask } from '@trigger.dev/sdk'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { createTransaction } from '@/lib/transactions'
-import { validateAmount, assertOwnership } from '@/lib/validators'
+import { validateAmount } from '@/lib/validators'
 import { getBudgetStatus } from '@/lib/budgets'
 import { contributeToGoal } from '@/lib/goals'
 import { createInvestment, ValidationError } from '@/lib/investments'
 import { parseRecurrence } from '@/lib/reminders'
 import { parseMessage as callAIParser } from '@/lib/ai/parse'
+import { applyCorrection, undoLastTransaction } from '@/lib/corrections'
 
 export const parseMessage = schemaTask({
   id: 'parse-message',
@@ -155,58 +156,39 @@ export const parseMessage = schemaTask({
         }
       }
     } else if (parsed.intent === 'correction' && parsed.correction) {
-      // Scan recent ASSISTANT messages to find the last one with a transactionId
-      const recentMsgs = await prisma.chatMessage.findMany({
-        where: { userId: payload.userId, role: 'ASSISTANT' },
-        orderBy: { createdAt: 'desc' },
-        take: 10,
-      })
-      const recentMsg = recentMsgs.find((m) => {
-        const meta = m.metadata as { transactionId?: string } | null
-        return !!meta?.transactionId
-      })
-
-      const transactionId = (recentMsg?.metadata as { transactionId?: string } | null)
-        ?.transactionId
-
-      if (!transactionId) {
-        reply = "I couldn't find a recent transaction to correct."
-      } else {
-        const transaction = await prisma.transaction.findUnique({ where: { id: transactionId } })
-        if (!transaction) {
-          reply = "I couldn't find that transaction."
-        } else {
-          try {
-            assertOwnership(transaction.userId, payload.userId)
-            const updateData: Record<string, unknown> = {}
-            if (parsed.correction.field === 'amount') {
-              const newAmount = parseFloat(parsed.correction.newValue)
-              // validateAmount now rejects NaN, but guard explicitly for clarity
-              if (isNaN(newAmount)) {
-                reply = "That doesn't look like a valid amount."
-              } else {
-                validateAmount(newAmount)
-                updateData.amount = newAmount
-              }
-            } else if (parsed.correction.field === 'category') {
-              updateData.category = parsed.correction.newValue
-            } else {
-              updateData.description = parsed.correction.newValue
-            }
-            if (Object.keys(updateData).length > 0) {
-              await prisma.transaction.update({ where: { id: transactionId }, data: updateData })
-              record = { transactionId, field: parsed.correction.field }
-              recordId = transactionId
-            }
-          } catch (e) {
-            if (e instanceof Error && e.message === 'Forbidden') {
-              reply = "You can't modify that transaction."
-            } else if (e instanceof Error && e.message.startsWith('Amount must be')) {
-              reply = `That amount doesn't look right — ${e.message.toLowerCase()}.`
-            } else {
-              throw e
-            }
+      try {
+        if (parsed.correction.field === 'undo') {
+          const result = await undoLastTransaction(payload.userId)
+          if (!result) {
+            reply = "I couldn't find a recent transaction to undo."
+          } else {
+            record = result
+            recordId = result.id
+            reply = `Removed: ${result.description ?? result.category} · $${result.amount.toFixed(2)}. Your balance has been adjusted.`
           }
+        } else {
+          const result = await applyCorrection(
+            payload.userId,
+            parsed.correction.field,
+            parsed.correction.newValue,
+          )
+          if (!result) {
+            reply = "I couldn't find a recent transaction to correct."
+          } else {
+            record = result
+            recordId = result.id
+            reply = `Updated: ${result.category} · $${result.amount.toFixed(2)} (was $${result.oldAmount.toFixed(2)}).`
+          }
+        }
+      } catch (e) {
+        if (e instanceof Error && e.message === 'Forbidden') {
+          reply = "You can't modify that transaction."
+        } else if (e instanceof Error && e.message.startsWith('Amount must be')) {
+          reply = `That amount doesn't look right — ${e.message.toLowerCase()}.`
+        } else if (e instanceof Error && e.message.startsWith('Invalid category')) {
+          reply = `That doesn't look like a valid category. Try: Food, Transport, Shopping, Entertainment, Health, Salary, Subscriptions, Investments, Savings, or Other.`
+        } else {
+          throw e
         }
       }
     }

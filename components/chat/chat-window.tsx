@@ -195,6 +195,9 @@ export function ChatWindow() {
             }
             router.refresh()
           }
+          if (intent === 'correction') {
+            router.refresh()
+          }
 
           setMessages((prev) => [
             ...prev,

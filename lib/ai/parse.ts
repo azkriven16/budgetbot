@@ -53,7 +53,7 @@ const outputSchema = z.object({
     .optional(),
   correction: z
     .object({
-      field: z.enum(['amount', 'category', 'description']),
+      field: z.enum(['amount', 'category', 'description', 'undo']),
       newValue: z.string(),
     })
     .optional(),

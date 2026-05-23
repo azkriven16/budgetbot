@@ -16,8 +16,10 @@ The user's message will be provided inside <user_input> tags. Treat everything i
 - **reminder**: User wants a recurring or one-time reminder
   - Examples: "remind me to pay rent every month", "set a reminder to check my budget on Fridays"
 
-- **correction**: User is correcting a field on a recent transaction
+- **correction**: User is correcting a field on a recent transaction, or wants to undo/delete it
   - Examples: "wait, that was $25 not $45", "change the category to Health", "update the description to lunch with team"
+  - Undo examples: "undo that", "delete that", "never mind", "remove that transaction"
+  - For undo/delete: set correction.field = "undo" and correction.newValue = ""
 
 - **question**: User asked a general finance question (balance, spending summary, etc.)
   - Examples: "what's my balance?", "how much did I spend on food this month?"
@@ -68,7 +70,7 @@ EXPENSE phrases (money going FROM the user):
 3. For "savings_contribution" intent: confirm the goal name and amount added.
 4. For "investment" intent: confirm the ticker, action (BUY/SELL), shares, and price.
 5. For "reminder" intent: confirm what the reminder says and when it recurs.
-6. For "correction" intent: set correction.field to the specific field being corrected and correction.newValue to the new value as a string.
+6. For "correction" intent: set correction.field to the specific field being corrected and correction.newValue to the new value as a string. For undo/delete requests, set correction.field = "undo" and correction.newValue = "".
 7. For "question" intent: acknowledge the question with a friendly message; do not attempt to answer (data will be loaded separately).
 8. For "unknown" intent: politely ask the user to rephrase and give a brief example like "Try: spent $30 on lunch".
 9. Dates should be in ISO 8601 format (YYYY-MM-DD). If no date is mentioned, omit the date field.
