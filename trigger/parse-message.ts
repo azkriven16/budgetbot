@@ -1,69 +1,14 @@
 import '@/lib/env'
 import { schemaTask } from '@trigger.dev/sdk'
-import { generateObject } from 'ai'
-import { createAnthropic } from '@ai-sdk/anthropic'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { createTransaction } from '@/lib/transactions'
 import { validateAmount, assertOwnership } from '@/lib/validators'
-import { CATEGORY_IDS } from '@/lib/categories'
-import { PARSE_MESSAGE_SYSTEM_PROMPT } from '@/lib/prompts/parse-message.v1'
 import { getBudgetStatus } from '@/lib/budgets'
 import { contributeToGoal } from '@/lib/goals'
 import { createInvestment, ValidationError } from '@/lib/investments'
 import { parseRecurrence } from '@/lib/reminders'
-
-const anthropic = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
-
-const outputSchema = z.object({
-  intent: z.enum([
-    'transaction',
-    'savings_contribution',
-    'investment',
-    'reminder',
-    'correction',
-    'question',
-    'unknown',
-  ]),
-  transaction: z
-    .object({
-      amount: z.number(),
-      type: z.enum(['INCOME', 'EXPENSE']),
-      category: z.enum(CATEGORY_IDS),
-      description: z.string(),
-      date: z.string().optional(),
-    })
-    .optional(),
-  savingsContribution: z
-    .object({
-      goalName: z.string(),
-      amount: z.number(),
-    })
-    .optional(),
-  investment: z
-    .object({
-      ticker: z.string(),
-      companyName: z.string().optional(),
-      action: z.enum(['BUY', 'SELL']),
-      shares: z.number(),
-      pricePerShare: z.number(),
-    })
-    .optional(),
-  reminder: z
-    .object({
-      message: z.string(),
-      recurrence: z.string(),
-      nextDueAt: z.string(),
-    })
-    .optional(),
-  correction: z
-    .object({
-      field: z.enum(['amount', 'category', 'description']),
-      newValue: z.string(),
-    })
-    .optional(),
-  replyMessage: z.string(),
-})
+import { parseMessage as callAIParser } from '@/lib/ai/parse'
 
 export const parseMessage = schemaTask({
   id: 'parse-message',
@@ -77,32 +22,22 @@ export const parseMessage = schemaTask({
       data: { userId: payload.userId, role: 'USER', content: payload.message },
     })
 
-    // Injection hardening: user content is always wrapped in XML tags
-    const userContent = `<user_input>${payload.message}</user_input>`
-
-    const aiResult = await (async () => {
+    const parsed = await (async () => {
       try {
-        return await generateObject({
-          model: anthropic('claude-haiku-4-5-20251001'),
-          schema: outputSchema,
-          system: PARSE_MESSAGE_SYSTEM_PROMPT,
-          prompt: userContent,
-        })
+        return await callAIParser(payload.message)
       } catch (e) {
-        console.error('[parse-message] generateObject failed:', e)
+        console.error('[parse-message] AI call failed:', e)
         return null
       }
     })()
 
-    if (!aiResult) {
+    if (!parsed) {
       const reply = "Sorry, I'm having trouble reaching my AI service right now. Please try again in a moment."
       await prisma.chatMessage.create({
         data: { userId: payload.userId, role: 'ASSISTANT', content: reply },
       })
       return { intent: 'unknown' as const, reply, record: null }
     }
-
-    const { object: parsed, usage } = aiResult
     let reply = parsed.replyMessage
     let record: unknown = null
     let recordId: string | undefined
@@ -281,11 +216,7 @@ export const parseMessage = schemaTask({
         userId: payload.userId,
         role: 'ASSISTANT',
         content: reply,
-        metadata: {
-          ...(recordId ? { transactionId: recordId } : {}),
-          inputTokens: usage.inputTokens ?? 0,
-          outputTokens: usage.outputTokens ?? 0,
-        },
+        metadata: recordId ? { transactionId: recordId } : {},
       },
     })
 
