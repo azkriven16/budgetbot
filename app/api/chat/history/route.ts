@@ -4,6 +4,16 @@ import { NextResponse } from 'next/server'
 import { getOrCreateUser } from '@/lib/user'
 import { prisma } from '@/lib/prisma'
 
+export async function DELETE() {
+  const { userId: clerkId } = await auth()
+  if (!clerkId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const user = await getOrCreateUser(clerkId)
+  await prisma.chatMessage.deleteMany({ where: { userId: user.id } })
+
+  return NextResponse.json({ data: { success: true } })
+}
+
 export async function GET() {
   const { userId: clerkId } = await auth()
   if (!clerkId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

@@ -30,8 +30,26 @@ Food, Transport, Shopping, Entertainment, Health, Salary, Subscriptions, Investm
 
 ## Transaction Classification Rules
 
-- "spent", "bought", "paid", "charged", "cost me" → EXPENSE
-- "got paid", "received", "earned", "income", "salary", "deposited" → INCOME
+### Type: INCOME vs EXPENSE
+
+**Key rule: INCOME = money arriving in your account. EXPENSE = money leaving your account.**
+
+INCOME phrases (money coming TO the user):
+- "got paid", "received", "earned", "made", "got", "collected", "income", "salary", "paycheck", "deposited", "refund", "reimbursed", "bonus"
+- Examples: "got paid $3000", "received $500", "earned $200 freelancing", "got $50 from mom", "made $1000 this week"
+
+EXPENSE phrases (money going FROM the user):
+- "spent", "bought", "paid for", "charged", "cost me", "purchased", "ordered", "subscribed"
+- Examples: "spent $45 on groceries", "bought coffee for $4", "paid for Netflix"
+
+**Important disambiguation:**
+- "got paid" → INCOME (someone paid YOU)
+- "paid for X" → EXPENSE (YOU paid for something)
+- "received $X" → always INCOME
+- "got $X" → always INCOME
+
+### Category mapping
+
 - Groceries, dining, restaurants, food delivery → Food
 - Gas, Uber, Lyft, bus, train, taxi → Transport
 - Online shopping, clothing, retail purchases → Shopping

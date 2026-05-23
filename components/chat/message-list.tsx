@@ -8,6 +8,7 @@ import { TypingIndicator } from './typing-indicator'
 interface MessageListProps {
   messages: ChatMessage[]
   pending: boolean
+  onUndo?: (messageId: string, transactionId: string) => Promise<void>
 }
 
 function isSameDay(a: Date, b: Date): boolean {
@@ -32,7 +33,7 @@ function formatDateLabel(date: Date): string {
   })
 }
 
-export function MessageList({ messages, pending }: MessageListProps) {
+export function MessageList({ messages, pending, onUndo }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -55,7 +56,7 @@ export function MessageList({ messages, pending }: MessageListProps) {
                 <div className="flex-1 h-px bg-subtle" />
               </div>
             )}
-            <MessageBubble message={message} />
+            <MessageBubble message={message} onUndo={onUndo} />
           </div>
         )
       })}

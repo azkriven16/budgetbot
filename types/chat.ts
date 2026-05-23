@@ -1,4 +1,5 @@
 export interface TransactionData {
+  transactionId?: string
   amount: number
   type: 'INCOME' | 'EXPENSE'
   category: string

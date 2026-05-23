@@ -119,11 +119,16 @@ export const parseMessage = schemaTask({
 
         // Warn the user if this expense pushes their category budget to ≥80%
         if (parsed.transaction.type === 'EXPENSE') {
-          const budgets = await getBudgetStatus(payload.userId)
-          const affected = budgets.find((b) => b.category === parsed.transaction!.category)
-          if (affected && affected.percentage >= 80) {
-            const over = affected.percentage >= 100
-            reply += `\n\n⚠️ Heads up — you're at ${affected.percentage}% of your ${affected.category} budget this month${over ? ' (over limit!)' : ''}.`
+          const expenseCategory = parsed.transaction.category
+          try {
+            const budgets = await getBudgetStatus(payload.userId)
+            const affected = budgets.find((b) => b.category === expenseCategory)
+            if (affected && affected.percentage >= 80) {
+              const over = affected.percentage >= 100
+              reply += `\n\n⚠️ Heads up — you're at ${affected.percentage}% of your ${affected.category} budget this month${over ? ' (over limit!)' : ''}.`
+            }
+          } catch (budgetErr) {
+            console.error('[parse-message] budget check failed:', budgetErr)
           }
         }
       } catch (e) {

@@ -1,9 +1,4 @@
 import { getCategory } from '@/lib/categories'
-import {
-  Progress,
-  ProgressTrack,
-  ProgressIndicator,
-} from '@/components/ui/progress'
 import type { BudgetStatus } from '@/lib/budgets'
 
 const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
@@ -37,11 +32,13 @@ export function BudgetProgress({ budget }: Props) {
           {fmt.format(spentAmount)} / {fmt.format(limitAmount)}
         </span>
       </div>
-      <Progress value={clamped}>
-        <ProgressTrack>
-          <ProgressIndicator className={indicatorClass(percentage)} />
-        </ProgressTrack>
-      </Progress>
+      {/* Plain div track — avoids double-render bug in the Progress wrapper component */}
+      <div className="relative h-1.5 w-full rounded-full bg-subtle overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all ${indicatorClass(percentage)}`}
+          style={{ width: `${clamped}%` }}
+        />
+      </div>
     </div>
   )
 }

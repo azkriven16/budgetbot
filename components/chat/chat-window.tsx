@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { Trash2 } from 'lucide-react'
 import type { ChatMessage, TransactionData } from '@/types/chat'
 import { MessageList } from './message-list'
 import { ChatInput } from './chat-input'
@@ -39,6 +40,7 @@ interface RunOutput {
   reply: string
   record: {
     transaction?: {
+      id?: string
       amount: string | number
       type: 'INCOME' | 'EXPENSE'
       category: string
@@ -52,6 +54,7 @@ export function ChatWindow() {
   const router = useRouter()
   const [messages, setMessages] = useState<ChatMessage[]>(() => [makeWelcome()])
   const [pending, setPending] = useState(false)
+  const [resetting, setResetting] = useState(false)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
@@ -86,6 +89,29 @@ export function ChatWindow() {
   useEffect(() => {
     return () => stopPolling()
   }, [])
+
+  async function handleUndo(messageId: string, transactionId: string) {
+    const res = await fetch(`/api/transactions/${transactionId}`, { method: 'DELETE' })
+    if (!res.ok) throw new Error('undo failed')
+    // Remove the transaction card data from the message so the card disappears
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === messageId ? { ...m, transaction: undefined } : m,
+      ),
+    )
+    router.refresh()
+  }
+
+  async function handleResetHistory() {
+    if (resetting || pending) return
+    setResetting(true)
+    try {
+      await fetch('/api/chat/history', { method: 'DELETE' })
+      setMessages([makeWelcome()])
+    } finally {
+      setResetting(false)
+    }
+  }
 
   async function handleSend(content: string) {
     const userMsg: ChatMessage = {
@@ -123,7 +149,7 @@ export function ChatWindow() {
     }
 
     let pollTicks = 0
-    const MAX_POLL_TICKS = 20 // 30s at 1.5s interval
+    const MAX_POLL_TICKS = 40
 
     pollRef.current = setInterval(async () => {
       pollTicks++
@@ -159,6 +185,7 @@ export function ChatWindow() {
           let transaction: TransactionData | undefined
           if (intent === 'transaction' && record?.transaction) {
             transaction = {
+              transactionId: record.transaction.id,
               amount: Number(record.transaction.amount),
               type: record.transaction.type,
               category: record.transaction.category,
@@ -197,7 +224,18 @@ export function ChatWindow() {
 
   return (
     <div className="flex flex-col h-[calc(100dvh-8.5rem)] md:h-dvh overflow-hidden">
-      <MessageList messages={messages} pending={pending} />
+      <div className="flex items-center justify-end px-4 py-2 border-b border-default shrink-0">
+        <button
+          onClick={handleResetHistory}
+          disabled={resetting || pending}
+          title="Clear chat history"
+          className="flex items-center gap-1.5 text-xs text-muted hover:text-primary transition-colors disabled:opacity-40"
+        >
+          <Trash2 size={13} />
+          {resetting ? 'Clearing…' : 'Clear history'}
+        </button>
+      </div>
+      <MessageList messages={messages} pending={pending} onUndo={handleUndo} />
       <ChatInput onSend={handleSend} disabled={pending} />
     </div>
   )

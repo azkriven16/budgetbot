@@ -5,6 +5,7 @@ import { TransactionCard } from './transaction-card'
 
 interface MessageBubbleProps {
   message: ChatMessage
+  onUndo?: (messageId: string, transactionId: string) => Promise<void>
 }
 
 function formatTime(date: Date): string {
@@ -15,7 +16,7 @@ function formatTime(date: Date): string {
   })
 }
 
-export function MessageBubble({ message }: MessageBubbleProps) {
+export function MessageBubble({ message, onUndo }: MessageBubbleProps) {
   const isUser = message.role === 'user'
 
   return (
@@ -32,7 +33,14 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         >
           {message.content}
           {!isUser && message.transaction && (
-            <TransactionCard {...message.transaction} />
+            <TransactionCard
+              {...message.transaction}
+              onUndo={
+                message.transaction.transactionId && onUndo
+                  ? () => onUndo(message.id, message.transaction!.transactionId!)
+                  : undefined
+              }
+            />
           )}
         </div>
         <span className="text-xs text-muted px-1">{formatTime(message.createdAt)}</span>

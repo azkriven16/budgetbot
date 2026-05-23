@@ -6,7 +6,6 @@ import { getOrCreateUser } from '@/lib/user'
 import { prisma } from '@/lib/prisma'
 import { getBudgetStatus } from '@/lib/budgets'
 import { CATEGORY_IDS } from '@/lib/categories'
-import { validateAmount } from '@/lib/validators'
 
 const bodySchema = z.object({
   category: z.enum(CATEGORY_IDS),
@@ -21,12 +20,6 @@ export async function POST(req: NextRequest) {
   const parsed = bodySchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' }, { status: 400 })
-  }
-
-  try {
-    validateAmount(parsed.data.limitAmount)
-  } catch (e) {
-    return NextResponse.json({ error: (e as Error).message }, { status: 400 })
   }
 
   const user = await getOrCreateUser(clerkId)

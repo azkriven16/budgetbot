@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Settings } from 'lucide-react'
 import {
@@ -22,7 +22,7 @@ interface Props {
 export function BudgetSettingsModal({ initialBudgets }: Props) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
-  const [isPending, startTransition] = useTransition()
+  const [loading, setLoading] = useState(false)
 
   // inputs: category → raw string value
   const [inputs, setInputs] = useState<Record<string, string>>(() => {
@@ -48,38 +48,43 @@ export function BudgetSettingsModal({ initialBudgets }: Props) {
       return
     }
     setErrors((e) => ({ ...e, [category]: '' }))
-
-    const res = await fetch('/api/budgets', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ category, limitAmount: amount }),
-    })
-
-    if (!res.ok) {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/budgets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category, limitAmount: amount }),
+      })
+      if (!res.ok) {
+        const json = await res.json()
+        setErrors((e) => ({ ...e, [category]: json.error ?? 'Save failed' }))
+        return
+      }
       const json = await res.json()
-      setErrors((e) => ({ ...e, [category]: json.error ?? 'Save failed' }))
-      return
+      setIds((prev) => ({ ...prev, [category]: json.data.id }))
+      router.refresh()
+    } finally {
+      setLoading(false)
     }
-
-    const json = await res.json()
-    setIds((prev) => ({ ...prev, [category]: json.data.id }))
-    startTransition(() => router.refresh())
   }
 
   async function handleRemove(category: string) {
     const id = ids[category]
     if (!id) return
-
-    const res = await fetch(`/api/budgets/${id}`, { method: 'DELETE' })
-    if (!res.ok) return
-
-    setIds((prev) => {
-      const next = { ...prev }
-      delete next[category]
-      return next
-    })
-    setInputs((prev) => ({ ...prev, [category]: '' }))
-    startTransition(() => router.refresh())
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/budgets/${id}`, { method: 'DELETE' })
+      if (!res.ok) return
+      setIds((prev) => {
+        const next = { ...prev }
+        delete next[category]
+        return next
+      })
+      setInputs((prev) => ({ ...prev, [category]: '' }))
+      router.refresh()
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -122,13 +127,13 @@ export function BudgetSettingsModal({ initialBudgets }: Props) {
                       setErrors((prev) => ({ ...prev, [cat]: '' }))
                     }}
                     className="h-8 text-sm rounded-xl flex-1"
-                    disabled={isPending}
+                    disabled={loading}
                   />
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => handleSave(cat)}
-                    disabled={isPending}
+                    disabled={loading}
                     className="rounded-xl shrink-0"
                   >
                     Set
@@ -138,7 +143,7 @@ export function BudgetSettingsModal({ initialBudgets }: Props) {
                       size="sm"
                       variant="ghost"
                       onClick={() => handleRemove(cat)}
-                      disabled={isPending}
+                      disabled={loading}
                       className="rounded-xl shrink-0 text-muted hover:text-error"
                     >
                       ×
