@@ -26,7 +26,8 @@ export function RemindersPanel() {
   }, [open])
 
   async function handleDelete(id: string) {
-    await fetch(`/api/reminders/${id}`, { method: 'DELETE' })
+    const res = await fetch(`/api/reminders/${id}`, { method: 'DELETE' })
+    if (!res.ok) return
     setReminders((prev) => prev.filter((r) => r.id !== id))
   }
 

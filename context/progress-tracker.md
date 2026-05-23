@@ -6,7 +6,7 @@ Foundation
 
 ## Current Goal
 
-Feature 13: Investment Tracking
+Feature 14: Reminders
 
 ## Feature Status
 
@@ -25,13 +25,14 @@ Feature 13: Investment Tracking
 | 11 | Budget Limits | ✅ Done | POST/GET /api/budgets + DELETE /api/budgets/[id], lib/budgets.ts (getBudgetStatus), BudgetProgress bars (green/amber/red), BudgetSettingsModal (upsert + remove), dashboard budget section, chat warning at ≥80% spend |
 | 12 | Savings Goals | ✅ Done | POST/GET /api/goals + DELETE /api/goals/[id] + POST /api/goals/[id]/contribute. lib/goals.ts (getUserGoals, contributeToGoal, contributeToGoalById). GoalCard, NewGoalDialog, GoalEmpty. Goals page with grid + empty state. Chat contribution with 🎉 completion message |
 | 13 | Investment Tracking | ✅ Done | POST/GET /api/investments, lib/investments.ts (createInvestment, validateSell, getPortfolioSummary). PortfolioSummary, HoldingCard, InvestmentHistory, PortfolioEmpty components. Portfolio page. Chat investment flow with sell validation and formatted reply |
-| 14 | Reminders | 🔲 Planned | |
+| 14 | Reminders | ✅ Done | POST/GET /api/reminders + DELETE /api/reminders/[id]. lib/reminders.ts (parseRecurrence pattern table, getNextOccurrence via croner, getUserReminders, deactivateReminder). trigger/reminder-check.ts hourly schedules.task with concurrencyLimit: 1, atomic $transaction per reminder. RemindersPanel collapsible UI in chat page. parse-message.ts reminder handler now uses parseRecurrence instead of AI-parsed date |
 | 15 | AI Parser Eval Harness | 🔲 Planned | ADLC: behavioral tests for AI parser |
 | 16 | Parse Correction (HITL) | 🔲 Planned | ADLC: "wait that was $25 not $45" correction flow |
 | 17 | Security Hardening | 🔲 Planned | Rate limiting, env validation, amount bounds, ownership checks |
 
 Status key: ✅ Done · 🔄 In Progress · 🔲 Planned · 🚧 Blocked
 
+- **2026-05-23** — Feature 14 (Reminders): POST/GET /api/reminders + DELETE /api/reminders/[id]. lib/reminders.ts (parseRecurrence with 10-pattern lookup table, getNextOccurrence via croner, getUserReminders, deactivateReminder). trigger/reminder-check.ts hourly schedules.task (concurrencyLimit: 1), each reminder fires atomically via $transaction (chatMessage + nextDueAt update) with per-reminder error isolation. RemindersPanel collapsible UI on chat page (lazy-loaded on open, guarded delete). trigger/parse-message.ts reminder handler now calls parseRecurrence instead of trusting AI-parsed date. Review fixed: non-atomic chatMessage+nextDueAt in scheduled task → wrapped in $transaction; catch-all 403 in DELETE route → narrowed to Forbidden only; optimistic delete in RemindersPanel with no error check → guarded on res.ok. pnpm build exits 0.
 - **2026-05-23** — Feature 13 (Investment Tracking): POST/GET /api/investments. lib/investments.ts (createInvestment with validateAmount + validateSell, getPortfolioSummary with AVCO cost basis, ValidationError class). PortfolioSummary card, HoldingCard per ticker (TrendingUp icon, avg cost, total cost), InvestmentHistory (BUY/SELL badges, date), PortfolioEmpty. Portfolio page Server Component. trigger/parse-message.ts investment handler uses createInvestment (eliminates direct prisma call), catches ValidationError for oversell, emits formatted 📈 reply. Review fixed: unvalidated `date` string in API route body → `Invalid Date` → uncaught Prisma 500 (added Zod `.refine` guard). pnpm build exits 0.
 - **2026-05-23** — Feature 12 (Savings Goals): POST/GET /api/goals + DELETE /api/goals/[id] + POST /api/goals/[id]/contribute. lib/goals.ts (getUserGoals, contributeToGoal by name with insensitive match, contributeToGoalById, shared applyContribution helper). GoalCard Server Component (amber progress bar, ✅ badge when complete). NewGoalDialog client component (emoji + name + target amount). GoalEmpty with CTA. Goals page grid layout. trigger/parse-message.ts savings_contribution updated: calls contributeToGoal, appends 🎉 on justCompleted. Review fixed: extracted applyContribution to eliminate 12-line duplication between contribute functions. pnpm build exits 0.
 - **2026-05-23** — Feature 11 (Budget Limits): POST/GET /api/budgets + DELETE /api/budgets/[id]. lib/budgets.ts (getBudgetStatus — parallel budget + spend queries, current-month window). BudgetProgress Server Component (green/amber/red bar via bg-income/bg-warning/bg-error tokens). BudgetSettingsModal (upsert via POST, remove via DELETE, per-category input + error display). Dashboard budget section below recent transactions with empty state. trigger/parse-message.ts updated to append ≥80% warning after EXPENSE. Review fixed: lib/budgets.ts relative env import → @/lib/env alias. pnpm build exits 0.

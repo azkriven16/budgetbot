@@ -14,19 +14,24 @@ export const reminderCheck = schedules.task({
     })
 
     for (const reminder of dueReminders) {
-      await prisma.chatMessage.create({
-        data: {
-          userId: reminder.userId,
-          role: 'ASSISTANT',
-          content: `⏰ Reminder: ${reminder.message}`,
-        },
-      })
-
-      const nextDueAt = getNextOccurrence(reminder.recurrence, now)
-      await prisma.reminder.update({
-        where: { id: reminder.id },
-        data: { nextDueAt },
-      })
+      try {
+        const nextDueAt = getNextOccurrence(reminder.recurrence, now)
+        await prisma.$transaction(async (tx) => {
+          await tx.chatMessage.create({
+            data: {
+              userId: reminder.userId,
+              role: 'ASSISTANT',
+              content: `⏰ Reminder: ${reminder.message}`,
+            },
+          })
+          await tx.reminder.update({
+            where: { id: reminder.id },
+            data: { nextDueAt },
+          })
+        })
+      } catch (e) {
+        console.error(`[reminder-check] failed for reminder ${reminder.id}:`, e)
+      }
     }
   },
 })

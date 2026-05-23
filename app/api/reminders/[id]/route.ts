@@ -18,7 +18,10 @@ export async function DELETE(
     const reminder = await deactivateReminder(id, user.id)
     if (!reminder) return NextResponse.json({ error: 'Not found' }, { status: 404 })
     return NextResponse.json({ data: { success: true } })
-  } catch {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  } catch (e) {
+    if (e instanceof Error && e.message === 'Forbidden') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+    throw e
   }
 }
