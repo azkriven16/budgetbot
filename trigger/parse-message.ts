@@ -163,7 +163,8 @@ export const parseMessage = schemaTask({
             reply = "I couldn't find a recent transaction to undo."
           } else {
             record = result
-            recordId = result.id
+            // Do not set recordId here — the transaction is deleted and storing
+            // its ID would cause the next correction to resolve a missing row.
             reply = `Removed: ${result.description ?? result.category} · $${result.amount.toFixed(2)}. Your balance has been adjusted.`
           }
         } else {
