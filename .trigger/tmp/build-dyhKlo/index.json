@@ -1,0 +1,61 @@
+{
+  "configPath": "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/work/budgbot/trigger.config.mjs",
+  "customConditions": [
+  ],
+  "prompts": [
+  ],
+  "queues": [
+  ],
+  "runtime": "node",
+  "runtimeVersion": "24.13.1",
+  "tasks": [
+    {
+      "entryPoint": "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/work/budgbot/trigger/parse-message.mjs",
+      "filePath": "trigger/parse-message.ts",
+      "id": "parse-message",
+      "maxDuration": 300,
+      "payloadSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false,
+        "properties": {
+          "clerkId": {
+            "type": "string"
+          },
+          "message": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "clerkId",
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "entryPoint": "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/work/budgbot/trigger/reminder-check.mjs",
+      "filePath": "trigger/reminder-check.ts",
+      "id": "reminder-check",
+      "maxDuration": 300,
+      "queue": {
+        "concurrencyLimit": 1
+      },
+      "schedule": {
+        "cron": "0 * * * *",
+        "timezone": "UTC"
+      },
+      "triggerSource": "schedule"
+    }
+  ],
+  "timings": {
+    "trigger/parse-message.ts": 97.35656999999998,
+    "trigger/reminder-check.ts": 0.8311909999999898
+  },
+  "workerEntryPoint": "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/.npm/_npx/f51a09bd0abf5f10/node_modules/trigger.dev/dist/esm/entryPoints/dev-run-worker.mjs"
+}

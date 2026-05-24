@@ -2,171 +2,223 @@
 
 import { useState, useRef } from 'react'
 import Link from 'next/link'
-import { MessageCircle, ShieldCheck, PieChart } from 'lucide-react'
+import { AnimatePresence, motion, useMotionValue, useTransform } from 'motion/react'
+import dynamic from 'next/dynamic'
+import { setWasmUrl } from '@lottiefiles/dotlottie-react'
+
+setWasmUrl('/dotlottie-player.wasm')
+
+const DotLottieReact = dynamic(
+  () => import('@lottiefiles/dotlottie-react').then(m => m.DotLottieReact),
+  { ssr: false, loading: () => <div className="w-full h-full" /> },
+)
 
 const SLIDES = [
   {
     bg: '#FDE8D8',
-    iconBg: '#F59E0B',
-    Icon: MessageCircle,
-    headline: 'Track\nSpending',
+    lottie: '/lottie/Revenue.lottie',
+    headline: 'Track Your\nSpending',
     body: 'Just chat to log expenses — no forms, no friction.',
   },
   {
     bg: '#D1FAE5',
-    iconBg: '#10B981',
-    Icon: ShieldCheck,
+    lottie: '/lottie/Finance guru.lottie',
     headline: 'Stay on\nBudget',
     body: 'Set category limits and get nudged before you overspend.',
   },
   {
     bg: '#FEF3C7',
-    iconBg: '#F59E0B',
-    Icon: PieChart,
+    lottie: '/lottie/Money.lottie',
     headline: 'Know Your\nMoney',
     body: 'See exactly where every dollar goes, at a glance.',
   },
 ]
 
+const springConfig = { type: 'spring' as const, stiffness: 260, damping: 22 }
+
+const containerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: springConfig },
+}
+
+const illustrationVariants = {
+  hidden: { opacity: 0, scale: 0.85 },
+  visible: { opacity: 1, scale: 1, transition: springConfig },
+}
+
 export default function OnboardingScreen({ onDone }: { onDone: () => void }) {
   const [index, setIndex] = useState(0)
-  const touchStartX = useRef<number | null>(null)
+  const [direction, setDirection] = useState(1)
+  const dragX = useMotionValue(0)
 
   const slide = SLIDES[index]
   const isLast = index === SLIDES.length - 1
-  const { Icon } = slide
+
+  // Interpolate background color across all slides as user drags
+  const bgColor = useTransform(
+    dragX,
+    [-200, 0, 200],
+    index > 0 ? [SLIDES[index - 1].bg, slide.bg, index < SLIDES.length - 1 ? SLIDES[index + 1].bg : slide.bg]
+              : [slide.bg, slide.bg, index < SLIDES.length - 1 ? SLIDES[index + 1].bg : slide.bg],
+  )
+
+  function goTo(next: number) {
+    if (next < 0 || next >= SLIDES.length) return
+    setDirection(next > index ? 1 : -1)
+    setIndex(next)
+  }
 
   function next() {
-    if (isLast) {
-      localStorage.setItem('budgbot_onboarded', '1')
-      onDone()
-    } else {
-      setIndex(index + 1)
-    }
+    if (isLast) { localStorage.setItem('budgbot_onboarded', '1'); onDone() }
+    else goTo(index + 1)
   }
 
-  function skip() {
-    localStorage.setItem('budgbot_onboarded', '1')
-    onDone()
+  function skip() { localStorage.setItem('budgbot_onboarded', '1'); onDone() }
+
+  function handleDragEnd(_: unknown, info: { offset: { x: number }; velocity: { x: number } }) {
+    const threshold = Math.abs(info.velocity.x) > 300 || Math.abs(info.offset.x) > 80
+    if (!threshold) return
+    if (info.offset.x < 0 && index < SLIDES.length - 1) goTo(index + 1)
+    if (info.offset.x > 0 && index > 0) goTo(index - 1)
   }
 
-  function onTouchStart(e: React.TouchEvent) {
-    touchStartX.current = e.touches[0].clientX
-  }
-
-  function onTouchEnd(e: React.TouchEvent) {
-    if (touchStartX.current === null) return
-    const dx = touchStartX.current - e.changedTouches[0].clientX
-    if (dx > 50 && index < SLIDES.length - 1) setIndex(index + 1)
-    if (dx < -50 && index > 0) setIndex(index - 1)
-    touchStartX.current = null
+  const slideVariants = {
+    enter: (d: number) => ({ x: d > 0 ? '100%' : '-100%', opacity: 0 }),
+    center: { x: '0%', opacity: 1, transition: { x: { type: 'spring' as const, stiffness: 300, damping: 30 }, opacity: { duration: 0.2 } } },
+    exit: (d: number) => ({ x: d > 0 ? '-100%' : '100%', opacity: 0, transition: { x: { type: 'spring' as const, stiffness: 300, damping: 30 }, opacity: { duration: 0.15 } } }),
   }
 
   return (
-    /* Full-page backdrop — matches slide color on mobile, neutral on desktop */
-    <div
-      className="min-h-dvh flex items-center justify-center transition-colors duration-500"
-      style={{ backgroundColor: slide.bg }}
-      onTouchStart={onTouchStart}
-      onTouchEnd={onTouchEnd}
+    <motion.div
+      className="min-h-dvh w-full flex items-center justify-center"
+      style={{ backgroundColor: bgColor }}
     >
-      {/* Card — full screen on mobile, constrained on desktop */}
+      {/* Phone card */}
       <div
-        className="relative flex flex-col w-full max-w-sm min-h-dvh md:min-h-0 md:h-160 md:rounded-3xl md:shadow-2xl overflow-hidden transition-colors duration-500 select-none"
-        style={{ backgroundColor: slide.bg }}
+        className="relative flex flex-col w-full max-w-sm min-h-dvh md:min-h-0 md:h-195 md:rounded-[2.5rem] md:shadow-2xl overflow-hidden"
       >
-        {/* Skip */}
-        <div className="flex justify-end px-6 pt-6 pb-0">
+        {/* Top bar — fixed height */}
+        <div className="flex items-center justify-between px-7 pt-10 pb-0 h-16 flex-none">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-primary">
+              <span className="text-xs font-bold text-white">B</span>
+            </div>
+            <span className="text-sm font-semibold text-primary">BudgBot</span>
+          </div>
           {!isLast ? (
-            <button
-              onClick={skip}
-              className="text-sm font-semibold opacity-40 hover:opacity-70 transition-opacity"
-              style={{ color: '#18181B' }}
-            >
+            <button onClick={skip} className="text-sm font-semibold text-muted hover:text-primary transition-colors">
               Skip
             </button>
-          ) : (
-            <div className="h-5" />
-          )}
+          ) : <div className="w-8" />}
         </div>
 
-        {/* Main content */}
-        <div className="flex flex-col flex-1 px-8 pt-6 pb-10 justify-between">
-          <div className="flex flex-col gap-10">
-            {/* Headline */}
-            <h1
-              className="text-5xl font-bold leading-tight tracking-tight whitespace-pre-line"
-              style={{ color: '#18181B', fontFamily: 'var(--font-jakarta)' }}
+        {/* Slide area — fills remaining space */}
+        <AnimatePresence mode="popLayout" custom={direction}>
+          <motion.div
+            key={index}
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.12}
+            onDragEnd={handleDragEnd}
+            onDrag={(_, info) => dragX.set(info.offset.x)}
+            onDragStart={() => dragX.set(0)}
+            className="flex flex-col flex-1 px-7 pb-10 cursor-grab active:cursor-grabbing"
+            style={{ x: dragX }}
+          >
+            <motion.div
+              className="flex flex-col flex-1"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
             >
-              {slide.headline}
-            </h1>
-
-            {/* Illustration */}
-            <div className="flex justify-center">
-              <div
-                className="w-44 h-44 rounded-3xl flex items-center justify-center shadow-lg"
-                style={{ backgroundColor: 'rgba(255,255,255,0.55)' }}
+              {/* Illustration — flex-1 so it absorbs all spare vertical space */}
+              <motion.div
+                variants={illustrationVariants}
+                className="flex-1 flex items-center justify-center py-4"
               >
-                <div
-                  className="w-24 h-24 rounded-2xl flex items-center justify-center"
-                  style={{ backgroundColor: slide.iconBg }}
+                <motion.div
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                  className="w-56 h-56"
                 >
-                  <Icon size={44} color="white" strokeWidth={1.75} />
-                </div>
+                  <DotLottieReact src={slide.lottie} autoplay loop className="w-full h-full" />
+                </motion.div>
+              </motion.div>
+
+              {/* Text block — fixed bottom portion */}
+              <div className="flex flex-col gap-2 pb-6">
+                <motion.h1
+                  variants={itemVariants}
+                  className="text-4xl font-bold leading-tight tracking-tight whitespace-pre-line text-primary"
+                  style={{ fontFamily: 'var(--font-jakarta)' }}
+                >
+                  {slide.headline}
+                </motion.h1>
+                <motion.p variants={itemVariants} className="text-sm leading-relaxed text-secondary">
+                  {slide.body}
+                </motion.p>
               </div>
-            </div>
 
-            {/* Body */}
-            <p
-              className="text-base leading-relaxed"
-              style={{ color: '#52525B' }}
-            >
-              {slide.body}
-            </p>
-          </div>
+              {/* Bottom controls */}
+              <motion.div variants={itemVariants} className="flex flex-col items-center gap-4">
+                {/* Progress dots */}
+                <div className="flex gap-2 items-center">
+                  {SLIDES.map((_, i) => (
+                    <motion.button
+                      key={i}
+                      onClick={() => goTo(i)}
+                      animate={{ width: i === index ? 28 : 8, backgroundColor: i === index ? '#18181B' : 'rgba(24,24,27,0.2)' }}
+                      transition={springConfig}
+                      className="h-2 rounded-full"
+                    />
+                  ))}
+                </div>
 
-          {/* Bottom */}
-          <div className="flex flex-col items-center gap-5 pt-6">
-            {/* Progress dots */}
-            <div className="flex gap-2 items-center">
-              {SLIDES.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setIndex(i)}
-                  className="rounded-full transition-all duration-300"
-                  style={{
-                    width: i === index ? 28 : 8,
-                    height: 8,
-                    backgroundColor: i === index ? '#18181B' : 'rgba(24,24,27,0.2)',
-                  }}
-                />
-              ))}
-            </div>
+                {/* Button */}
+                <motion.button
+                  onClick={next}
+                  whileTap={{ scale: 0.97 }}
+                  className="w-full py-4 rounded-2xl font-semibold text-white text-base"
+                  style={{ backgroundColor: '#18181B' }}
+                >
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={isLast ? 'start' : 'next'}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.15 }}
+                      className="block"
+                    >
+                      {isLast ? "Let's Start!" : 'Next'}
+                    </motion.span>
+                  </AnimatePresence>
+                </motion.button>
 
-            {/* Button — full width */}
-            <button
-              onClick={next}
-              className="w-full py-4 rounded-2xl font-semibold text-white text-base shadow-md transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{ backgroundColor: '#18181B' }}
-            >
-              {isLast ? 'Get Started' : 'Next'}
-            </button>
-
-            {/* Sub-link */}
-            <Link
-              href="/sign-up"
-              onClick={() => localStorage.setItem('budgbot_onboarded', '1')}
-              className="text-sm text-center"
-              style={{ color: '#52525B' }}
-            >
-              Don&apos;t have an account?{' '}
-              <span className="font-semibold" style={{ color: '#18181B' }}>
-                Create now
-              </span>
-            </Link>
-          </div>
-        </div>
+                {/* Sub-link */}
+                <Link
+                  href="/sign-up"
+                  onClick={() => localStorage.setItem('budgbot_onboarded', '1')}
+                  className="text-sm text-center text-secondary"
+                >
+                  No account?{' '}
+                  <span className="font-semibold text-primary">Create now</span>
+                </Link>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   )
 }

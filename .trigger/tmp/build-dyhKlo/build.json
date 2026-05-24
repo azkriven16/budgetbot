@@ -1,0 +1,126 @@
+{
+  "build": {
+  },
+  "cliPackageVersion": "4.4.6",
+  "config": {
+    "dirs": [
+      "trigger"
+    ],
+    "project": "proj_ewbheztekexsibcjjypz"
+  },
+  "configPath": "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/work/budgbot/trigger.config.mjs",
+  "contentHash": "1f6173f68787a67122effb243f4675d4",
+  "customConditions": [
+  ],
+  "deploy": {
+    "env": {
+    }
+  },
+  "environment": "dev",
+  "externals": [
+    {
+      "name": "@prisma/client",
+      "version": "7.8.0"
+    },
+    {
+      "name": "import-in-the-middle",
+      "version": "1.11.0"
+    }
+  ],
+  "files": [
+    {
+      "entry": "trigger/parse-message.ts",
+      "out": "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/work/budgbot/trigger/parse-message.mjs"
+    },
+    {
+      "entry": "trigger/reminder-check.ts",
+      "out": "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/work/budgbot/trigger/reminder-check.mjs"
+    }
+  ],
+  "indexWorkerEntryPoint": "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/.npm/_npx/f51a09bd0abf5f10/node_modules/trigger.dev/dist/esm/entryPoints/dev-index-worker.mjs",
+  "otelImportHook": {
+    "include": [
+    ]
+  },
+  "outputHashes": {
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/.npm/_npx/f51a09bd0abf5f10/node_modules/trigger.dev/dist/esm/entryPoints/dev-index-worker.mjs": "qT9IxjwLAoQ",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/.npm/_npx/f51a09bd0abf5f10/node_modules/trigger.dev/dist/esm/entryPoints/dev-index-worker.mjs.map": "aaOO2Dudsxw",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/.npm/_npx/f51a09bd0abf5f10/node_modules/trigger.dev/dist/esm/entryPoints/dev-run-worker.mjs": "/R9Mif/sNMc",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/.npm/_npx/f51a09bd0abf5f10/node_modules/trigger.dev/dist/esm/entryPoints/dev-run-worker.mjs.map": "T+qko51PeLo",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/chunk-32PWUPLC.mjs": "pUXO/x1l7PQ",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/chunk-32PWUPLC.mjs.map": "26+2307KC2c",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/chunk-4W63UDYJ.mjs": "MrEt+pyjiA0",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/chunk-4W63UDYJ.mjs.map": "9G+SOk6s3P8",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/chunk-6L3DBTMP.mjs": "pnVzG1Cs3O8",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/chunk-6L3DBTMP.mjs.map": "JZmVvNwm4gI",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/chunk-7JDNMTFL.mjs": "mXjAsUHM7t0",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/chunk-7JDNMTFL.mjs.map": "pwtlqW5LG6A",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/chunk-CTDAWCTK.mjs": "pjmNPzgoVKg",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/chunk-CTDAWCTK.mjs.map": "922Py0nEmuE",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/chunk-FUV6SSYK.mjs": "Mad/q9MtDLc",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/chunk-FUV6SSYK.mjs.map": "9IFojZihDyA",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/chunk-S2D5CTLY.mjs": "fNx3LcAlMDk",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/chunk-S2D5CTLY.mjs.map": "XFxnye8MySo",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/chunk-VT6VLAIF.mjs": "ypmrsERzQZA",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/chunk-VT6VLAIF.mjs.map": "WeBd5fmo0Ho",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/chunk-YWPWLCTP.mjs": "ABVt9Vl1wiA",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/chunk-YWPWLCTP.mjs.map": "9Pwea9eleHQ",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/crypto.node-5HPPZ5PO.mjs": "Hosiis4RK5g",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/crypto.node-5HPPZ5PO.mjs.map": "f+DirqJ/vQY",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/crypto.node-JYCJFDVT.mjs": "j/NseNbBSuk",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/crypto.node-JYCJFDVT.mjs.map": "0b4tlwmkM3g",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/esm-HF64XN43.mjs": "/ASyNSMg03k",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/esm-HF64XN43.mjs.map": "CYqZQcavdAI",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/esm-PSZIC5RF.mjs": "a0IxvD1oSwU",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/esm-PSZIC5RF.mjs.map": "uuvelps5tsQ",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/getMachineId-bsd-CQRW3DPG.mjs": "244piLhuSIA",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/getMachineId-bsd-CQRW3DPG.mjs.map": "dIKKZ8MMNl8",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/getMachineId-darwin-VNZGFVBR.mjs": "960+ecDyqc0",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/getMachineId-darwin-VNZGFVBR.mjs.map": "xJrfS7fTZLk",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/getMachineId-linux-TYVV4ZLT.mjs": "Mu4BzqEE9PY",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/getMachineId-linux-TYVV4ZLT.mjs.map": "iGLn8Cz4sPg",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/getMachineId-unsupported-5IRX77GI.mjs": "Ca/HGT5QNLM",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/getMachineId-unsupported-5IRX77GI.mjs.map": "L7KXQNW7Eqw",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/getMachineId-win-KAUWWGCN.mjs": "9b/UQB1v9SE",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/getMachineId-win-KAUWWGCN.mjs.map": "O6wx6Q5hFOU",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/s2s-3ZRIPYYD.mjs": "+6xdP4AKcy8",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/s2s-3ZRIPYYD.mjs.map": "cMXIJWjI/3w",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/token-5USK7BZX.mjs": "lVz7KM2Vh5A",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/token-5USK7BZX.mjs.map": "2c3c7MMQ96o",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/token-util-NDYNB3BQ.mjs": "9wEGcS7r1Sg",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/token-util-NDYNB3BQ.mjs.map": "0b4tlwmkM3g",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/work/budgbot/trigger.config.mjs": "wvVVMxrPz0I",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/work/budgbot/trigger.config.mjs.map": "pn2ziMYJzxI",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/work/budgbot/trigger/parse-message.mjs": "tVV7USI7ugM",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/work/budgbot/trigger/parse-message.mjs.map": "KKc0/9omtjE",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/work/budgbot/trigger/reminder-check.mjs": "Hd42fxmlQOY",
+    "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/work/budgbot/trigger/reminder-check.mjs.map": "Tr9W1n0C23I"
+  },
+  "outputPath": "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo",
+  "packageVersion": "4.4.6",
+  "runWorkerEntryPoint": "/home/euger/work/budgbot/.trigger/tmp/build-dyhKlo/.npm/_npx/f51a09bd0abf5f10/node_modules/trigger.dev/dist/esm/entryPoints/dev-run-worker.mjs",
+  "runtime": "node",
+  "sources": {
+    "package.json": {
+      "contentHash": "aedf4ad39cb511539e6ac6f6fa89c6ab",
+      "contents": "eJx1VE1z4yAMvedXMD4XbKdpkubUw/6MTmcIKI42GDwIu8l2+t93wJ/NZm/mvYckniR/rRjLrKwhO7Ds2Orq6EL2FMEOPKGzES9EKYoebTx2MkR18C0kiJTHJlB2YF8rxhjLNHTxlnJWtd6DDebGOL+gMdyFM3jizvKTRMM4j6mJvWcWruEpeKwq8O8Z47zxcMIrV844HwU3MMZ9Ph1NC+/ZcIFp6NKhsU3NfGvZEOGQiFQxY9kCjHXZ5jrqhIbuzcgAlGIxzsF2/IQGmADbCeOUNGOYY4tGpwAxdX8aKArSh4nqT2NyoHCQGMkOU6JUJ1CgXOKoMmjTfaD0NaCNo4CWgjQmko1HqiWrwIKPPVgx9p06oKEBq8EqhEUb3iRy0pdc2nD2rkEVY3w8i0Ls9mOGUVM5VxmYBS+T4CgJeIu5B6lSiR+l2Ihy4pUBf8nju39TonfiWewmuq85l1o2ATxvqkGzHwZqoVEGoXfhjl80Kyd9SYqN2IjtpGgbCpLOebTFYI19lLUoxP5fDWik4SHPizR9jz62ohDlfnq/MpKId9KjtAq4bMPZeQy3pC3EbnZCGboOacsF6p0F36crYuip461CDXxpa7mdq4mGRrjcivX80MG+vViXs3QKUb6Ktdj8gLl29SNKnaUPNPR7P1dFZ6mVHRzezTmCRPOJVvMafDXOyaLc8MmlxVoG4IpoGpOJ/+P0cGn9Inbb5eh2vx5P75hSEeVxEca4m4dzMS3n3WSEWwOUW6f7otfFHTM7Woh7btGb10fUaO6CXv7zEhV9n9wdtjvhPzGunD1hxf/T9rQg/27GwqKf1qQi02854dM093+gwaZS7FIfVt+rv5x1oyg="
+    },
+    "trigger.config.ts": {
+      "contentHash": "4dd543832db7dd49cd35223a597d1492",
+      "contents": "eJxtTstqwzAQvOsr5qYEQmzoTadCm68IIdjW2lknkowkt26M/z3Ijikp3csMwzyWTed8xAhNNVv6cLbmBhNq7wzke/TcNOT3mr6yoK9S8OrvPAdTHIZINrCz/0fKnm86o9UUsiUlhaBh7tFUF/0tvqxvRgF03rVURQWZ2Jm+ywvdI11pCFxWbfvT3eVOAKYYPntfRHZW4S3PkzavKqQa4Hdc4Tgr+Pv7ZnzqgHGaFGQCb+eBdNN2YacE005MW/EAr8BmXg=="
+    },
+    "trigger/parse-message.ts": {
+      "contentHash": "d23b6e6682cf7e8b80683c7c561da8a9",
+      "contents": "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"
+    },
+    "trigger/reminder-check.ts": {
+      "contentHash": "af72c9e10146ee016c9c9c98ee5b0aa3",
+      "contents": "eJx1U9uK2zAQffdXnIcF28V12ldByobuy0J3C82+lUK00iQRcaRUGudC8Df0V/pN/ZJiO3bsbIvBlkZnZs45I5vtznlGfD8pzOuE7D6OTBs6I6g16bKggApL77aI79mb1Yp8rmk/CXozAO+8CVt5RTb12uAAtSJ+piN/Var0nqyimwRPW2M1+RBHER2bJOVsYHQHn9ekNpheueUswyY5R4DRAnGHe69qYJxFgPLOCsQf8K59muDPkkoSONflL1xOX8zWsMBHVDXCl1ZAhpNVSFJMP6HugQsd6w6YwtIBD5IpSQdHuqRvnQpMIQ/S8MWdvGOXL43VT9KekrYocFiTb/hYOvJDSTOuNwWTaHpVGUyYKTZ7EmBfUssRqNKo+S6dRzK2Cm45IpOia8b+1K97RV1fTN9OKemJe+piWU0s7auMdN6xlzZIxcbZ5OIhHwcuDnP4mKu15CcKQa4oV55qS4c4QEuWAuMYUAbyj1r0ivM2kN3AvCtIIJ7N54/zl9nzS3wLUM4yWRZY/Pn1G51hAnfnvvK2ZVctxrnVcFul/9J2JbfTb4X1czdDHUaPK/cGDMb0v9b9soKSrNZIKL2ZtisoJ++dTxbfxz/MDyylKUg396m/SAMfjK7EIgP1TaLuXWVRlUZ/AauDTKk="
+    },
+    "tsconfig.json": {
+      "contentHash": "02fc19ad21338c2ab820a70136310db4",
+      "contents": "eJxtUU1Lw0AQvedXLHMMbaJehJ4E6cFiEfRYimyyQ7t2v9id1EjJf5fdJNVET8O892b2vdlLxhjUVjup0L84ktYEWLFLxhhjQNwfkGDFYP12d3N7D4seV7KCFduBsBoWLJZCEnpeKYw9BoMtwX5Qc6Xs5yauJd/gAIaTdM+yejxifZox5GVNU8zYtZYzDMPWikbhkyH01k1JnajofDAzwV8xWNXEsFFRNUYo9KPER/KMm2DNdtzya7MMVnFC0XOzVB+hjRs98pqWsRmHTO1RoyGupgNONQeZTr5LABtO36fmOkVIAQa4S3U8reN0/PkvxuChzNPPFGUO+2wc6KI8mlCNwOtbae8SzbkQBYXRap6X+d/2mqSIQyV9OQzlTNpTAs//06nVFGKS5B+wvRoCYwW+6+Gm+6zLvgEbXbUJ"
+    }
+  },
+  "target": "dev"
+}

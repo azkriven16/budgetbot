@@ -13,12 +13,7 @@ export function SessionLayout({ sessionId }: Props) {
 
   return (
     <div className="flex h-[calc(100dvh-8.5rem)] md:h-dvh overflow-hidden">
-      {/* Desktop sessions sidebar */}
-      <div className="hidden md:flex md:w-60 shrink-0 flex-col border-r border-default">
-        <SessionSidebar currentSessionId={sessionId} />
-      </div>
-
-      {/* Mobile overlay sidebar */}
+      {/* Mobile-only overlay — desktop uses the global sidebar */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
@@ -34,13 +29,10 @@ export function SessionLayout({ sessionId }: Props) {
         </div>
       )}
 
-      {/* Chat */}
-      <div className="flex-1 min-w-0">
-        <ChatWindow
-          sessionId={sessionId}
-          onOpenSessions={() => setSidebarOpen(true)}
-        />
-      </div>
+      <ChatWindow
+        sessionId={sessionId}
+        onOpenSessions={() => setSidebarOpen(true)}
+      />
     </div>
   )
 }
