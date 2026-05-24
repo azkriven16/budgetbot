@@ -91,7 +91,7 @@ export default function OnboardingScreen({ onDone }: { onDone: () => void }) {
         </div>
 
         {/* Main content */}
-        <div className="flex flex-col flex-1 px-8 pt-6 pb-8 justify-between">
+        <div className="flex flex-col flex-1 px-8 pt-6 pb-10 justify-between">
           <div className="flex flex-col gap-10">
             {/* Headline */}
             <h1
@@ -126,7 +126,7 @@ export default function OnboardingScreen({ onDone }: { onDone: () => void }) {
           </div>
 
           {/* Bottom */}
-          <div className="flex flex-col gap-6 pt-6">
+          <div className="flex flex-col items-center gap-5 pt-6">
             {/* Progress dots */}
             <div className="flex gap-2 items-center">
               {SLIDES.map((_, i) => (
@@ -143,28 +143,27 @@ export default function OnboardingScreen({ onDone }: { onDone: () => void }) {
               ))}
             </div>
 
-            {/* CTA row */}
-            <div className="flex items-center justify-between">
-              <button
-                onClick={next}
-                className="px-8 py-3.5 rounded-2xl font-semibold text-white text-sm shadow-md transition-all hover:opacity-90 active:scale-95"
-                style={{ backgroundColor: '#18181B' }}
-              >
-                {isLast ? 'Get Started' : 'Next'}
-              </button>
+            {/* Button — full width */}
+            <button
+              onClick={next}
+              className="w-full py-4 rounded-2xl font-semibold text-white text-base shadow-md transition-all hover:opacity-90 active:scale-[0.98]"
+              style={{ backgroundColor: '#18181B' }}
+            >
+              {isLast ? 'Get Started' : 'Next'}
+            </button>
 
-              <Link
-                href="/sign-up"
-                onClick={() => localStorage.setItem('budgbot_onboarded', '1')}
-                className="text-sm font-medium leading-tight text-right"
-                style={{ color: '#52525B' }}
-              >
-                Don&apos;t have an account?{' '}
-                <span className="font-semibold" style={{ color: '#18181B' }}>
-                  Create now
-                </span>
-              </Link>
-            </div>
+            {/* Sub-link */}
+            <Link
+              href="/sign-up"
+              onClick={() => localStorage.setItem('budgbot_onboarded', '1')}
+              className="text-sm text-center"
+              style={{ color: '#52525B' }}
+            >
+              Don&apos;t have an account?{' '}
+              <span className="font-semibold" style={{ color: '#18181B' }}>
+                Create now
+              </span>
+            </Link>
           </div>
         </div>
       </div>
