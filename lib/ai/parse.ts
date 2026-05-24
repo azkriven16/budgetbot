@@ -1,5 +1,5 @@
 import '@/lib/env'
-import { generateObject } from 'ai'
+import { generateObject, streamObject } from 'ai'
 import { createAnthropic } from '@ai-sdk/anthropic'
 import { z } from 'zod'
 import { CATEGORY_IDS } from '@/lib/categories'
@@ -8,11 +8,11 @@ import { validateAmount } from '@/lib/validators'
 
 const anthropic = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
+// replyMessage is first so the model streams it immediately before other fields
 const outputSchema = z.object({
+  replyMessage: z.string(),
   intent: z.enum([
     'transaction',
-    'savings_contribution',
-    'investment',
     'reminder',
     'correction',
     'question',
@@ -25,21 +25,6 @@ const outputSchema = z.object({
       category: z.enum(CATEGORY_IDS),
       description: z.string(),
       date: z.string().optional(),
-    })
-    .optional(),
-  savingsContribution: z
-    .object({
-      goalName: z.string(),
-      amount: z.number(),
-    })
-    .optional(),
-  investment: z
-    .object({
-      ticker: z.string(),
-      companyName: z.string().optional(),
-      action: z.enum(['BUY', 'SELL']),
-      shares: z.number(),
-      pricePerShare: z.number(),
     })
     .optional(),
   reminder: z
@@ -55,7 +40,6 @@ const outputSchema = z.object({
       newValue: z.string(),
     })
     .optional(),
-  replyMessage: z.string(),
 })
 
 export type ParseResult = z.infer<typeof outputSchema>
@@ -70,10 +54,36 @@ export async function parseMessage(message: string): Promise<ParseResult> {
   })
 
   if (object.transaction) validateAmount(object.transaction.amount)
-  if (object.investment) {
-    validateAmount(object.investment.pricePerShare)
-    validateAmount(object.investment.shares)
-  }
 
   return object
+}
+
+export type StreamChunk =
+  | { kind: 'text'; text: string }
+  | { kind: 'done'; result: ParseResult }
+
+export async function* streamParseMessage(message: string): AsyncGenerator<StreamChunk> {
+  const userContent = `<user_input>${message}</user_input>`
+
+  const { partialObjectStream, object } = streamObject({
+    model: anthropic('claude-haiku-4-5-20251001'),
+    schema: outputSchema,
+    system: PARSE_MESSAGE_SYSTEM_PROMPT,
+    prompt: userContent,
+  })
+
+  let lastText = ''
+
+  for await (const partial of partialObjectStream) {
+    const current = partial.replyMessage ?? ''
+    if (current.length > lastText.length) {
+      lastText = current
+      yield { kind: 'text', text: current }
+    }
+  }
+
+  const result = await object
+  if (result.transaction) validateAmount(result.transaction.amount)
+
+  yield { kind: 'done', result }
 }

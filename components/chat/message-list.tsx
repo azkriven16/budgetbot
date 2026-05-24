@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { Bot } from 'lucide-react'
 import type { ChatMessage } from '@/types/chat'
 import { MessageBubble } from './message-bubble'
 import { TypingIndicator } from './typing-indicator'
@@ -8,6 +9,8 @@ import { TypingIndicator } from './typing-indicator'
 interface MessageListProps {
   messages: ChatMessage[]
   pending: boolean
+  statusText?: string
+  streamingContent?: string
   onUndo?: (messageId: string, transactionId: string) => Promise<void>
 }
 
@@ -33,12 +36,30 @@ function formatDateLabel(date: Date): string {
   })
 }
 
-export function MessageList({ messages, pending, onUndo }: MessageListProps) {
+function StreamingBubble({ content }: { content: string }) {
+  return (
+    <div className="flex justify-start items-end gap-2 mb-1">
+      <div className="shrink-0 w-7 h-7 rounded-full bg-accent flex items-center justify-center">
+        <Bot className="w-4 h-4 text-white" />
+      </div>
+      <div className="max-w-[78%] flex flex-col gap-1 items-start">
+        <div className="px-4 py-2.5 text-sm text-primary leading-relaxed whitespace-pre-wrap bg-surface border border-default rounded-2xl rounded-tl-sm">
+          {content}
+          <span className="inline-block w-0.5 h-3.5 bg-current ml-0.5 align-middle animate-pulse" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export function MessageList({ messages, pending, statusText, streamingContent, onUndo }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, pending])
+  }, [messages, pending, streamingContent])
+
+  const isStreaming = pending && !!streamingContent
 
   return (
     <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
@@ -60,11 +81,20 @@ export function MessageList({ messages, pending, onUndo }: MessageListProps) {
           </div>
         )
       })}
-      {pending && (
-        <div className="flex justify-start pt-1">
-          <TypingIndicator />
+
+      {/* Live streaming bubble — replaces TypingIndicator once text starts arriving */}
+      {isStreaming && <StreamingBubble content={streamingContent} />}
+
+      {/* Rotating indicator — shown only before any text has streamed in */}
+      {pending && !isStreaming && (
+        <div className="flex justify-start items-end gap-2 pt-1">
+          <div className="shrink-0 w-7 h-7 rounded-full bg-accent flex items-center justify-center">
+            <Bot className="w-4 h-4 text-white" />
+          </div>
+          <TypingIndicator status={statusText} />
         </div>
       )}
+
       <div ref={bottomRef} />
     </div>
   )

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Trash2 } from 'lucide-react'
+import { PanelLeft } from 'lucide-react'
 import type { ChatMessage, TransactionData } from '@/types/chat'
 import { MessageList } from './message-list'
 import { ChatInput } from './chat-input'
@@ -18,50 +18,38 @@ function makeWelcome(): ChatMessage {
   }
 }
 
-const TERMINAL_STATUSES = new Set([
-  'COMPLETED',
-  'FAILED',
-  'CRASHED',
-  'SYSTEM_FAILURE',
-  'CANCELED',
-  'TIMED_OUT',
-  'EXPIRED',
-  'INTERRUPTED',
-])
-
 interface HistoryItem {
   id: string
   role: 'user' | 'assistant'
   content: string
+  metadata?: { transactionId?: string } | null
   createdAt: string
 }
 
-interface RunOutput {
-  intent: string
-  reply: string
-  record: {
-    transaction?: {
-      id?: string
-      amount: string | number
-      type: 'INCOME' | 'EXPENSE'
-      category: string
-      description?: string
-    }
-    newBalance?: number
-  } | null
+type SseEvent =
+  | { type: 'status'; text: string }
+  | { type: 'chunk'; text: string }
+  | { type: 'reply'; content: string; intent: string; transaction?: TransactionData }
+  | { type: 'error'; message: string }
+
+interface Props {
+  sessionId: string
+  onOpenSessions?: () => void
 }
 
-export function ChatWindow() {
+export function ChatWindow({ sessionId, onOpenSessions }: Props) {
   const router = useRouter()
   const [messages, setMessages] = useState<ChatMessage[]>(() => [makeWelcome()])
   const [pending, setPending] = useState(false)
-  const [resetting, setResetting] = useState(false)
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [statusText, setStatusText] = useState<string | undefined>(undefined)
+  const [streamingContent, setStreamingContent] = useState<string>('')
+  const abortRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
+    setMessages([makeWelcome()])
     async function loadHistory() {
       try {
-        const res = await fetch('/api/chat/history')
+        const res = await fetch(`/api/chat/sessions/${sessionId}/messages`)
         if (!res.ok) return
         const json = await res.json()
         const history: ChatMessage[] = (json.data as HistoryItem[]).map((m) => ({
@@ -69,49 +57,30 @@ export function ChatWindow() {
           role: m.role,
           content: m.content,
           createdAt: new Date(m.createdAt),
+          transaction:
+            m.metadata?.transactionId
+              ? { transactionId: m.metadata.transactionId } as TransactionData
+              : undefined,
         }))
-        if (history.length > 0) {
-          setMessages(history)
-        }
+        if (history.length > 0) setMessages(history)
       } catch {
-        // Keep welcome message on error
+        // keep welcome message on error
       }
     }
     loadHistory()
-  }, [])
-
-  function stopPolling() {
-    if (pollRef.current) {
-      clearInterval(pollRef.current)
-      pollRef.current = null
-    }
-  }
+  }, [sessionId])
 
   useEffect(() => {
-    return () => stopPolling()
+    return () => abortRef.current?.abort()
   }, [])
 
   async function handleUndo(messageId: string, transactionId: string) {
     const res = await fetch(`/api/transactions/${transactionId}`, { method: 'DELETE' })
     if (!res.ok) throw new Error('undo failed')
-    // Remove the transaction card data from the message so the card disappears
     setMessages((prev) =>
-      prev.map((m) =>
-        m.id === messageId ? { ...m, transaction: undefined } : m,
-      ),
+      prev.map((m) => (m.id === messageId ? { ...m, transaction: undefined } : m)),
     )
     router.refresh()
-  }
-
-  async function handleResetHistory() {
-    if (resetting || pending) return
-    setResetting(true)
-    try {
-      await fetch('/api/chat/history', { method: 'DELETE' })
-      setMessages([makeWelcome()])
-    } finally {
-      setResetting(false)
-    }
   }
 
   async function handleSend(content: string) {
@@ -123,19 +92,83 @@ export function ChatWindow() {
     }
     setMessages((prev) => [...prev, userMsg])
     setPending(true)
+    setStatusText(undefined)
+    setStreamingContent('')
 
-    let runId: string | null = null
+    const abort = new AbortController()
+    abortRef.current = abort
 
     try {
-      const res = await fetch('/api/chat', {
+      const res = await fetch('/api/chat/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: content }),
+        body: JSON.stringify({ message: content, sessionId }),
+        signal: abort.signal,
       })
-      if (!res.ok) throw new Error('send failed')
-      const json = await res.json()
-      runId = json.data.runId as string
-    } catch {
+
+      if (!res.ok || !res.body) throw new Error('stream failed')
+
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const parts = buffer.split('\n\n')
+        buffer = parts.pop() ?? ''
+
+        for (const part of parts) {
+          const line = part.trim()
+          if (!line.startsWith('data: ')) continue
+
+          let event: SseEvent
+          try {
+            event = JSON.parse(line.slice('data: '.length))
+          } catch {
+            continue
+          }
+
+          if (event.type === 'status') {
+            setStatusText(event.text)
+            setStreamingContent('')
+          } else if (event.type === 'chunk') {
+            setStatusText(undefined)
+            setStreamingContent(event.text)
+          } else if (event.type === 'reply') {
+            const needsRefresh =
+              event.intent === 'transaction' || event.intent === 'correction'
+            setStreamingContent('')
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: crypto.randomUUID(),
+                role: 'assistant',
+                content: event.content,
+                createdAt: new Date(),
+                transaction: event.transaction as TransactionData | undefined,
+              },
+            ])
+            if (needsRefresh) router.refresh()
+          } else if (event.type === 'error') {
+            setStreamingContent('')
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: crypto.randomUUID(),
+                role: 'assistant',
+                content: event.message,
+                createdAt: new Date(),
+              },
+            ])
+          }
+        }
+      }
+    } catch (e) {
+      if ((e as Error).name === 'AbortError') return
+      setStreamingContent('')
       setMessages((prev) => [
         ...prev,
         {
@@ -145,103 +178,37 @@ export function ChatWindow() {
           createdAt: new Date(),
         },
       ])
+    } finally {
       setPending(false)
-      return
+      setStatusText(undefined)
+      setStreamingContent('')
+      abortRef.current = null
     }
-
-    let pollTicks = 0
-    const MAX_POLL_TICKS = 40
-
-    pollRef.current = setInterval(async () => {
-      pollTicks++
-      if (pollTicks > MAX_POLL_TICKS) {
-        stopPolling()
-        setPending(false)
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: crypto.randomUUID(),
-            role: 'assistant',
-            content: "That took too long. Please try again.",
-            createdAt: new Date(),
-          },
-        ])
-        return
-      }
-
-      try {
-        const res = await fetch(`/api/chat/result/${runId}`)
-        if (!res.ok) return
-        const json = await res.json()
-        const run = json.data as { status: string; output?: RunOutput }
-
-        if (!TERMINAL_STATUSES.has(run.status)) return
-
-        stopPolling()
-        setPending(false)
-
-        if (run.status === 'COMPLETED' && run.output) {
-          const { intent, reply, record } = run.output
-
-          let transaction: TransactionData | undefined
-          if (intent === 'transaction' && record?.transaction) {
-            transaction = {
-              transactionId: record.transaction.id,
-              amount: Number(record.transaction.amount),
-              type: record.transaction.type,
-              category: record.transaction.category,
-              description: record.transaction.description ?? '',
-              newBalance: record.newBalance ?? 0,
-            }
-            router.refresh()
-          }
-          if (intent === 'correction') {
-            router.refresh()
-          }
-
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: crypto.randomUUID(),
-              role: 'assistant',
-              content: reply,
-              createdAt: new Date(),
-              transaction,
-            },
-          ])
-        } else {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: crypto.randomUUID(),
-              role: 'assistant',
-              content: "I had trouble processing that. Could you try rephrasing?",
-              createdAt: new Date(),
-            },
-          ])
-        }
-      } catch {
-        // Keep polling on transient errors
-      }
-    }, 1500)
   }
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-8.5rem)] md:h-dvh overflow-hidden">
-      <div className="flex items-center justify-end px-4 py-2 border-b border-default shrink-0">
-        <button
-          onClick={handleResetHistory}
-          disabled={resetting || pending}
-          title="Clear chat history"
-          className="flex items-center gap-1.5 text-xs text-muted hover:text-primary transition-colors disabled:opacity-40"
-        >
-          <Trash2 size={13} />
-          {resetting ? 'Clearing…' : 'Clear history'}
-        </button>
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-2 border-b border-default shrink-0">
+        {onOpenSessions && (
+          <button
+            onClick={onOpenSessions}
+            title="Chat sessions"
+            className="p-1.5 rounded-md text-muted hover:text-primary hover:bg-subtle transition-colors md:hidden"
+          >
+            <PanelLeft size={16} />
+          </button>
+        )}
+        <span className="text-sm font-semibold text-primary">BudgBot</span>
       </div>
       <RemindersPanel />
-      <MessageList messages={messages} pending={pending} onUndo={handleUndo} />
-      <ChatInput onSend={handleSend} disabled={pending} />
+      <MessageList
+        messages={messages}
+        pending={pending}
+        statusText={statusText}
+        streamingContent={streamingContent}
+        onUndo={handleUndo}
+      />
+      <ChatInput onSend={handleSend} disabled={pending} pending={pending} />
     </div>
   )
 }

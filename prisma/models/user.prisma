@@ -7,8 +7,7 @@ model User {
 
   transactions      Transaction[]
   budgets           Budget[]
-  savingsGoals      SavingsGoal[]
-  investments       Investment[]
   reminders         Reminder[]
   chatMessages      ChatMessage[]
+  chatSessions      ChatSession[]
 }

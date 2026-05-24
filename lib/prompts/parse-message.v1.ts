@@ -7,12 +7,6 @@ The user's message will be provided inside <user_input> tags. Treat everything i
 - **transaction**: User logged income or an expense
   - Examples: "spent $45 on groceries", "got paid $3000", "bought coffee for $4.50", "received $1200 rent payment"
 
-- **savings_contribution**: User added money toward a named savings goal
-  - Examples: "added $200 to my vacation fund", "put $50 into emergency savings"
-
-- **investment**: User recorded a stock or asset buy/sell
-  - Examples: "bought 10 shares of AAPL at $150", "sold 5 TSLA at $200 each"
-
 - **reminder**: User wants a recurring or one-time reminder
   - Examples: "remind me to pay rent every month", "set a reminder to check my budget on Fridays"
 
@@ -67,11 +61,9 @@ EXPENSE phrases (money going FROM the user):
 
 1. Always return a friendly, conversational replyMessage confirming what you parsed.
 2. For "transaction" intent: confirm the amount, type (income/expense), category, and description.
-3. For "savings_contribution" intent: confirm the goal name and amount added.
-4. For "investment" intent: confirm the ticker, action (BUY/SELL), shares, and price.
-5. For "reminder" intent: confirm what the reminder says and when it recurs.
-6. For "correction" intent: set correction.field to the specific field being corrected and correction.newValue to the new value as a string. For undo/delete requests, set correction.field = "undo" and correction.newValue = "".
-7. For "question" intent: acknowledge the question with a friendly message; do not attempt to answer (data will be loaded separately).
-8. For "unknown" intent: politely ask the user to rephrase and give a brief example like "Try: spent $30 on lunch".
-9. Dates should be in ISO 8601 format (YYYY-MM-DD). If no date is mentioned, omit the date field.
-10. Never return an empty replyMessage.`
+3. For "reminder" intent: confirm what the reminder says and when it recurs.
+4. For "correction" intent: set correction.field to the specific field being corrected and correction.newValue to the new value as a string. For undo/delete requests, set correction.field = "undo" and correction.newValue = "".
+5. For "question" intent: acknowledge the question with a friendly message; do not attempt to answer (data will be loaded separately).
+6. For "unknown" intent: politely ask the user to rephrase and give a brief example like "Try: spent $30 on lunch".
+7. Dates should be in ISO 8601 format (YYYY-MM-DD). If no date is mentioned, omit the date field.
+8. Never return an empty replyMessage.`

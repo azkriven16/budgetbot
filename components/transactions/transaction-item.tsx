@@ -1,6 +1,6 @@
 'use client'
 
-import { Trash2 } from 'lucide-react'
+import { Trash2, Pencil } from 'lucide-react'
 import { getCategory } from '@/lib/categories'
 
 const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
@@ -17,10 +17,11 @@ export interface SerializedTransaction {
 interface TransactionItemProps {
   transaction: SerializedTransaction
   onDelete: (id: string) => void
+  onEdit: (transaction: SerializedTransaction) => void
   isDeleting: boolean
 }
 
-export function TransactionItem({ transaction, onDelete, isDeleting }: TransactionItemProps) {
+export function TransactionItem({ transaction, onDelete, onEdit, isDeleting }: TransactionItemProps) {
   const { icon: Icon, color, dim } = getCategory(transaction.category)
   const isIncome = transaction.type === 'INCOME'
   const time = new Date(transaction.date).toLocaleTimeString('en-US', {
@@ -57,10 +58,19 @@ export function TransactionItem({ transaction, onDelete, isDeleting }: Transacti
       </span>
 
       <button
+        onClick={() => onEdit(transaction)}
+        disabled={isDeleting}
+        aria-label="Edit transaction"
+        className="ml-1 p-1.5 rounded-lg text-muted hover:text-primary hover:bg-subtle transition-colors disabled:opacity-40"
+      >
+        <Pencil className="h-4 w-4" />
+      </button>
+
+      <button
         onClick={() => onDelete(transaction.id)}
         disabled={isDeleting}
         aria-label="Delete transaction"
-        className="ml-1 p-1.5 rounded-lg text-muted hover:text-expense hover:bg-expense-dim transition-colors disabled:opacity-40"
+        className="p-1.5 rounded-lg text-muted hover:text-expense hover:bg-expense-dim transition-colors disabled:opacity-40"
       >
         <Trash2 className="h-4 w-4" />
       </button>

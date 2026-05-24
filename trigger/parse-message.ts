@@ -5,8 +5,6 @@ import { prisma } from '@/lib/prisma'
 import { createTransaction } from '@/lib/transactions'
 import { validateAmount } from '@/lib/validators'
 import { getBudgetStatus } from '@/lib/budgets'
-import { contributeToGoal } from '@/lib/goals'
-import { createInvestment, ValidationError } from '@/lib/investments'
 import { parseRecurrence } from '@/lib/reminders'
 import { parseMessage as callAIParser } from '@/lib/ai/parse'
 import { applyCorrection, undoLastTransaction } from '@/lib/corrections'
@@ -39,6 +37,7 @@ export const parseMessage = schemaTask({
       })
       return { intent: 'unknown' as const, reply, record: null }
     }
+
     let reply = parsed.replyMessage
     let record: unknown = null
     let recordId: string | undefined
@@ -56,12 +55,10 @@ export const parseMessage = schemaTask({
         record = result
         recordId = result.transaction.id
 
-        // Warn the user if this expense pushes their category budget to ≥80%
         if (parsed.transaction.type === 'EXPENSE') {
-          const expenseCategory = parsed.transaction.category
           try {
             const budgets = await getBudgetStatus(payload.userId)
-            const affected = budgets.find((b) => b.category === expenseCategory)
+            const affected = budgets.find((b) => b.category === parsed.transaction!.category)
             if (affected && affected.percentage >= 80) {
               const over = affected.percentage >= 100
               reply += `\n\n⚠️ Heads up — you're at ${affected.percentage}% of your ${affected.category} budget this month${over ? ' (over limit!)' : ''}.`
@@ -77,60 +74,12 @@ export const parseMessage = schemaTask({
           throw e
         }
       }
-    } else if (parsed.intent === 'savings_contribution' && parsed.savingsContribution) {
-      try {
-        validateAmount(parsed.savingsContribution.amount)
-        const result = await contributeToGoal(
-          payload.userId,
-          parsed.savingsContribution.goalName,
-          parsed.savingsContribution.amount,
-        )
-        if (!result) {
-          reply = `I couldn't find a savings goal named "${parsed.savingsContribution.goalName}". Create one in the Goals page first!`
-        } else {
-          record = result
-          recordId = result.goalId
-          if (result.justCompleted) {
-            reply += `\n\n🎉 You've reached your ${result.goalName} goal!`
-          }
-        }
-      } catch (e) {
-        if (e instanceof Error && e.message.startsWith('Amount must be')) {
-          reply = `That amount doesn't look right — ${e.message.toLowerCase()}.`
-        } else {
-          throw e
-        }
-      }
-    } else if (parsed.intent === 'investment' && parsed.investment) {
-      try {
-        const inv = parsed.investment
-        const investment = await createInvestment(payload.userId, {
-          ticker: inv.ticker,
-          companyName: inv.companyName,
-          action: inv.action,
-          shares: inv.shares,
-          pricePerShare: inv.pricePerShare,
-        })
-        record = investment
-        recordId = investment.id
-        const totalCost = inv.shares * inv.pricePerShare
-        reply = `📈 Logged: ${inv.action} ${inv.shares} ${inv.ticker.toUpperCase()} @ $${inv.pricePerShare.toFixed(2)}. Total cost: $${totalCost.toFixed(2)}.`
-      } catch (e) {
-        if (e instanceof ValidationError) {
-          reply = e.message
-        } else if (e instanceof Error && e.message.startsWith('Amount must be')) {
-          reply = `That amount doesn't look right — ${e.message.toLowerCase()}.`
-        } else {
-          throw e
-        }
-      }
     } else if (parsed.intent === 'reminder' && parsed.reminder) {
       const activeCount = await prisma.reminder.count({
         where: { userId: payload.userId, isActive: true },
       })
       if (activeCount >= 10) {
-        reply =
-          "You've reached the maximum of 10 active reminders. Delete some before adding new ones."
+        reply = "You've reached the maximum of 10 active reminders. Delete some before adding new ones."
       } else {
         const { recurrenceCron, nextDueAt, isDefault } = parseRecurrence(parsed.reminder.recurrence)
         const reminder = await prisma.reminder.create({
@@ -151,8 +100,7 @@ export const parseMessage = schemaTask({
         })
         reply = `⏰ Got it! I'll remind you to ${parsed.reminder.message} — next reminder: ${formattedDate}.`
         if (isDefault) {
-          reply +=
-            " I'll remind you monthly — you can create a new reminder with more specific timing if needed."
+          reply += " I'll remind you monthly — you can create a new reminder with more specific timing if needed."
         }
       }
     } else if (parsed.intent === 'correction' && parsed.correction) {
@@ -163,8 +111,6 @@ export const parseMessage = schemaTask({
             reply = "I couldn't find a recent transaction to undo."
           } else {
             record = result
-            // Do not set recordId here — the transaction is deleted and storing
-            // its ID would cause the next correction to resolve a missing row.
             reply = `Removed: ${result.description ?? result.category} · $${result.amount.toFixed(2)}. Your balance has been adjusted.`
           }
         } else {

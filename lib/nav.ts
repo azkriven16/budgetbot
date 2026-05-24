@@ -1,9 +1,7 @@
-import { LayoutDashboard, ArrowLeftRight, MessageCircle, Target, TrendingUp } from 'lucide-react'
+import { LayoutDashboard, MessageCircle, ArrowLeftRight } from 'lucide-react'
 
 export const navItems = [
-  { href: '/dashboard',    label: 'Home',         icon: LayoutDashboard },
-  { href: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
+  { href: '/dashboard',    label: 'Dashboard',    icon: LayoutDashboard },
   { href: '/chat',         label: 'Chat',         icon: MessageCircle },
-  { href: '/goals',        label: 'Goals',        icon: Target },
-  { href: '/portfolio',    label: 'Portfolio',    icon: TrendingUp },
+  { href: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
 ] as const

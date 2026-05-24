@@ -7,6 +7,7 @@ import { CATEGORY_IDS } from '@/lib/categories'
 import { TransactionFilters } from '@/components/transactions/transaction-filters'
 import { TransactionList } from '@/components/transactions/transaction-list'
 import { TransactionEmpty } from '@/components/transactions/transaction-empty'
+import { AddTransactionDialog } from '@/components/transactions/add-transaction-dialog'
 import type { TransactionType } from '@/app/generated/prisma/client'
 
 function currentMonth(): string {
@@ -51,7 +52,10 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
 
   return (
     <div className="flex flex-col gap-4 p-4 md:p-6">
-      <h1 className="text-xl font-semibold text-primary">Transactions</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold text-primary">Transactions</h1>
+        <AddTransactionDialog />
+      </div>
       <TransactionFilters month={month} category={category} type={params.type} />
       {serialized.length === 0 ? (
         <TransactionEmpty />
