@@ -25,3 +25,14 @@ export async function POST() {
   })
   return Response.json({ data: session }, { status: 201 })
 }
+
+export async function DELETE() {
+  const { userId: clerkId } = await auth()
+  if (!clerkId) return new Response('Unauthorized', { status: 401 })
+  const user = await getOrCreateUser(clerkId)
+  // Cascade deletes messages via onDelete: Cascade on ChatSession → ChatMessage
+  await prisma.chatSession.deleteMany({ where: { userId: user.id } })
+  // Clean up any orphaned messages (sessionId: null)
+  await prisma.chatMessage.deleteMany({ where: { userId: user.id } })
+  return new Response(null, { status: 204 })
+}
