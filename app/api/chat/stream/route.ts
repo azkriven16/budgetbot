@@ -123,15 +123,17 @@ export async function POST(req: NextRequest) {
   })
   if (!session) return new Response('Session not found', { status: 404 })
 
-  try {
-    const { success } = await chatRateLimit.limit(user.id)
-    if (!success) {
-      return new Response(
-        encode({ type: 'error', message: 'Too many requests. Try again in a moment.' }),
-        { status: 429, headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' } },
-      )
-    }
-  } catch { /* fail open */ }
+  if (chatRateLimit) {
+    try {
+      const { success } = await chatRateLimit.limit(user.id)
+      if (!success) {
+        return new Response(
+          encode({ type: 'error', message: 'Too many requests. Try again in a moment.' }),
+          { status: 429, headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' } },
+        )
+      }
+    } catch { /* fail open */ }
+  }
 
   const message = parsed.data.message
   const sessionId = session.id

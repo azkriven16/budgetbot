@@ -24,16 +24,18 @@ export async function POST(req: NextRequest) {
 
   const user = await getOrCreateUser(clerkId)
 
-  try {
-    const { success } = await chatRateLimit.limit(user.id)
-    if (!success) {
-      return NextResponse.json(
-        { error: 'Too many requests. Try again in a moment.' },
-        { status: 429 },
-      )
+  if (chatRateLimit) {
+    try {
+      const { success } = await chatRateLimit.limit(user.id)
+      if (!success) {
+        return NextResponse.json(
+          { error: 'Too many requests. Try again in a moment.' },
+          { status: 429 },
+        )
+      }
+    } catch {
+      // fail open — Redis unavailable
     }
-  } catch {
-    // fail open — Redis unavailable
   }
 
   try {
