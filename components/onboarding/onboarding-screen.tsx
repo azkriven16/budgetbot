@@ -149,7 +149,7 @@ export default function OnboardingScreen({ onDone }: { onDone: () => void }) {
                 <motion.div
                   animate={{ y: [0, -10, 0] }}
                   transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                  className="w-56 h-56"
+                  className="w-72 h-72 sm:w-56 sm:h-56"
                 >
                   <DotLottieReact src={slide.lottie} autoplay loop className="w-full h-full" />
                 </motion.div>
